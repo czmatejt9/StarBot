@@ -53,10 +53,10 @@ class StarCityBot(commands.Bot):
 
     async def get_prefix(self, message: discord.Message):
         if message.guild.id in self.db.keys():
-            prefix = self.db[message.guild.id]
+            prefix = self.db[str(message.guild.id)]
         else:
             prefix = DEFAULT_PREFIX
-            self.db[message.guild.id] = prefix
+            self.db[str(message.guild.id)] = prefix
         return prefix
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
