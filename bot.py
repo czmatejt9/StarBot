@@ -2,11 +2,14 @@ import os
 import logging
 import discord
 from discord.ext import commands
-import config
+from replit import db
+# import config
+# from dotenv import load_dotenv
+# load_dotenv()
 
 COMMAND_PREFIX = "sc "
-TOKEN = config.DISCORD_TOKEN
-MY_GUILD_ID = config.MY_GUILD_ID
+TOKEN = os.getenv("DISCORD_TOKEN")
+MY_GUILD_ID = os.getenv("MY_GUILD_ID")
 EXTENSIONS = (
     "cogs.general",
     "cogs.minigames",
@@ -28,6 +31,7 @@ class StarCityBot(commands.Bot):
         )
         super().__init__(command_prefix=command_prefix, self_bot=False, intents=intents)
         self.synced = False
+        self.db = db
         # TODO your initialization
 
     async def setup_hook(self) -> None:
