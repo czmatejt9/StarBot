@@ -52,7 +52,7 @@ class StarCityBot(commands.Bot):
         # TODO
 
     async def get_prefix(self, message: discord.Message):
-        if message.guild.id in self.db.keys():
+        if str(message.guild.id) in self.db.keys():
             prefix = self.db[str(message.guild.id)]
         else:
             prefix = DEFAULT_PREFIX
