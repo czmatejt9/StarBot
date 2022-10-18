@@ -30,7 +30,7 @@ class StarCityBot(commands.Bot):
             reactions=True,
             message_content=True,
         )
-        super().__init__(command_prefix=command_prefix, self_bot=False, intents=intents)
+        super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
         self.db = db
         # TODO your initialization
