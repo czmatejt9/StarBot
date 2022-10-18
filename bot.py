@@ -7,12 +7,13 @@ from replit import db
 # from dotenv import load_dotenv
 # load_dotenv()
 
-COMMAND_PREFIX = "sc "
+DEFAULT_PREFIX = "sc "
 TOKEN = os.getenv("DISCORD_TOKEN")
 MY_GUILD_ID = os.getenv("MY_GUILD_ID")
 EXTENSIONS = (
     "cogs.general",
     "cogs.minigames",
+    "cogs.mod"
 )
 log = logging.getLogger(__name__)  # TODO logging
 
@@ -50,6 +51,14 @@ class StarCityBot(commands.Bot):
         print("Running...")
         # TODO
 
+    async def get_prefix(self, message: discord.Message):
+        if message.guild.id in self.db.keys():
+            prefix = self.db[message.guild.id]
+        else:
+            prefix = DEFAULT_PREFIX
+            self.db[message.guild.id] = prefix
+        return prefix
+
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.author.send('This command cannot be used in private messages.')
@@ -64,6 +73,6 @@ class StarCityBot(commands.Bot):
             await ctx.send(str(error))
 
 
-mybot = StarCityBot(COMMAND_PREFIX)
+mybot = StarCityBot(DEFAULT_PREFIX)
 if __name__ == "__main__":
     mybot.run(TOKEN)
