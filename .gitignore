@@ -3,3 +3,4 @@ testing_file.py
 images
 .idea
 discord_bot
+__pycache__
