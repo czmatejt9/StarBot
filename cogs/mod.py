@@ -8,7 +8,7 @@ class Mod(commands.Cog):
         self.bot: StarCityBot = bot
 
     @commands.command()
-    def prefix(self, ctx: commands.Context, new_prefix: str):
+    async def prefix(self, ctx: commands.Context, new_prefix: str):
         """Changes prefix for current guild. Must have admin permissions."""
         self.bot.db[ctx.guild.id] = new_prefix
         await ctx.send(f"Successfully changed prefix for {self.bot.user.mention} to ` {new_prefix} `")
