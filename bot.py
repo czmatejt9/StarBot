@@ -3,6 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 from replit import db
+from keep_alive import keep_alive
 # import config
 # from dotenv import load_dotenv
 # load_dotenv()
@@ -75,4 +76,5 @@ class StarCityBot(commands.Bot):
 
 mybot = StarCityBot(DEFAULT_PREFIX)
 if __name__ == "__main__":
+    keep_alive()
     mybot.run(TOKEN)
