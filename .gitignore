@@ -4,3 +4,4 @@ images
 .idea
 discord_bot
 __pycache__
+variables.env

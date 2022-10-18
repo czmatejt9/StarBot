@@ -6,7 +6,7 @@ from replit import db
 from keep_alive import keep_alive
 # import config
 # from dotenv import load_dotenv
-# load_dotenv()
+# load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "variables.env"))
 
 DEFAULT_PREFIX = "sc "
 TOKEN = os.getenv("DISCORD_TOKEN")
