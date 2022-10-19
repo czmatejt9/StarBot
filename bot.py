@@ -3,18 +3,18 @@ import logging
 import discord
 from discord.ext import commands
 from replit import db
-from keep_alive import keep_alive
-# import config
+import config
 # from dotenv import load_dotenv
 # load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "variables.env"))
 
 DEFAULT_PREFIX = "sc "
-TOKEN = os.getenv("DISCORD_TOKEN")
-MY_GUILD_ID = os.getenv("MY_GUILD_ID")
+TOKEN = config.DISCORD_TOKEN
+MY_GUILD_ID = config.MY_GUILD_ID
 EXTENSIONS = (
     "cogs.general",
     "cogs.minigames",
-    "cogs.mod"
+    "cogs.mod",
+    "cogs.meta"
 )
 log = logging.getLogger(__name__)  # TODO logging
 
@@ -33,7 +33,6 @@ class StarCityBot(commands.Bot):
         )
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
-        self.db = db
         # TODO your initialization
 
     async def setup_hook(self) -> None:
@@ -53,12 +52,7 @@ class StarCityBot(commands.Bot):
         # TODO
 
     async def get_prefix(self, message: discord.Message):
-        if str(message.guild.id) in self.db.keys():
-            prefix = self.db[str(message.guild.id)]
-        else:
-            prefix = DEFAULT_PREFIX
-            self.db[str(message.guild.id)] = prefix
-        return prefix
+        return DEFAULT_PREFIX  # TODO to get from postgresql
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, commands.NoPrivateMessage):
@@ -76,5 +70,4 @@ class StarCityBot(commands.Bot):
 
 mybot = StarCityBot(DEFAULT_PREFIX)
 if __name__ == "__main__":
-    keep_alive()
     mybot.run(TOKEN)
