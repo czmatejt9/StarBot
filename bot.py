@@ -1,5 +1,7 @@
 import os
 import logging
+
+import aiosqlite
 import discord
 from discord.ext import commands
 from replit import db
@@ -7,13 +9,14 @@ import config
 # from dotenv import load_dotenv
 # load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "variables.env"))
 
-DEFAULT_PREFIX = "sc "
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
+DEFAULT_PREFIX = "sc "
+DB_NAME = "bot.db"
 EXTENSIONS = (
     "cogs.general",
     "cogs.minigames",
-    "cogs.mod",
+    "cogs.mods",
     "cogs.meta"
 )
 log = logging.getLogger(__name__)  # TODO logging
@@ -33,26 +36,51 @@ class StarCityBot(commands.Bot):
         )
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
+        self.db: aiosqlite.Connection = None
         # TODO your initialization
 
     async def setup_hook(self) -> None:
+        # loading extensions
         for extension in EXTENSIONS:
             try:
                 await self.load_extension(extension)
             except Exception as e:
                 log.exception(f'Failed to load extension {extension}')
+
         # syncs slash commands
         if not self.synced:
             await self.tree.sync(guild=discord.Object(id=MY_GUILD_ID))
             print(f"synced slash commands for {self.user}")
             self.synced = True
 
+        # connecting to sqlite database and creating tables if they don't exist
+        self.db = await aiosqlite.connect(DB_NAME)
+        async with self.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("CREATE TABLE IF NOT EXISTS guilds (guild_id INTEGER NOT NULL, prefix TEXT NOT NULL,"
+                                 "PRIMARY KEY (guild_id))")
+        await self.db.commit()  # TODO CREATE TABLE FOR USERS
+
     async def on_ready(self):
         print("Running...")
         # TODO
 
     async def get_prefix(self, message: discord.Message):
-        return DEFAULT_PREFIX  # TODO to get from postgresql
+        if message.guild is None:
+            return DEFAULT_PREFIX
+
+        async with self.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT prefix FROM guilds WHERE guild_id = ?", (message.guild.id, ))
+            prefix = await cursor.fetchone()
+            if prefix is None:  # we assign the default prefix and upload it to db
+                prefix = DEFAULT_PREFIX
+                await cursor.execute("INSERT INTO guilds VALUES (?, ?)", (message.guild.id, prefix))
+                await self.db.commit()
+            else:
+                prefix = prefix[0]
+
+        return prefix
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, commands.NoPrivateMessage):

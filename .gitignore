@@ -5,3 +5,4 @@ images
 discord_bot
 __pycache__
 variables.env
+database.db

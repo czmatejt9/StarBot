@@ -1,4 +1,5 @@
 from datetime import datetime
+import aiosqlite
 import pytz
 import discord
 from discord.ext import commands
@@ -20,8 +21,13 @@ class General(commands.Cog):
     @commands.hybrid_command(name="hi", aliases=["hello"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def hi(self, ctx: commands.Context):
-        """Greets you"""
-        await ctx.send(f"Hi {ctx.author.name}!")
+        """Greets you and show prefix for current server"""
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT prefix FROM guilds WHERE guild_id = ?", (ctx.guild.id, ))
+            prefix = await cursor.fetchone()
+            prefix = prefix[0]
+        await ctx.send(f"Hi {ctx.author.name}! Prefix for this server is `{prefix}`")
 
     @commands.hybrid_command(name="ping")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
