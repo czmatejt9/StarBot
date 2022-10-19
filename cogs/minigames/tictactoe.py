@@ -19,7 +19,7 @@ class Tile(discord.ui.Button['Board']):
 
 class Board(discord.ui.View):
     def __init__(self, first_player: discord.Member, second_player: discord.Member):
-        super().__init__()
+        super().__init__(timeout=900.0)
         self.p1 = first_player
         self.p2 = second_player
         self.p1_symbol = "X"
@@ -94,10 +94,18 @@ class Board(discord.ui.View):
             return False
         return True
 
+    async def on_timeout(self) -> None:
+        for child in self.children:
+            child.disabled = True
+        await self.message.edit(content=f"**TicTacToe**\n{self.p1.mention} {self.p1_symbol} vs {self.p2.mention}"
+                                        f" {self.p2_symbol}\n\n**Game timed out...**", view=self,
+                                allowed_mentions=discord.AllowedMentions.none())
+        self.stop()
+
 
 class Prompt(discord.ui.View):
     def __init__(self, author, member):
-        super().__init__(timeout=180.0)
+        super().__init__(timeout=300.0)
         self.author: discord.Member = author
         self.member: discord.Member = member
         self.message: discord.Message = None

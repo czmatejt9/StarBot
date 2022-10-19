@@ -108,7 +108,7 @@ class Tile(discord.ui.Button["Board"]):
 
 class Board(discord.ui.View):
     def __init__(self, author: discord.Member, member: discord.Member):
-        super().__init__()
+        super().__init__(timeout=900.0)
         if coinflip():
             author, member = member, author
         self.p1 = Player(author, "red", False)
@@ -318,6 +318,15 @@ class Board(discord.ui.View):
             return False
         return True
 
+    async def on_timeout(self) -> None:
+        for child in self.children:
+            child.disabled = True
+        await self.message.edit(content=f"**Gobblet gobblers**\n{self.p1.p.mention}({self.p1.color}) vs "
+                                        f"{self.p2.p.mention}({self.p2.color})\n"
+                                        f"{self.p1.p.mention}: ✅\n{self.p2.p.mention}: ✅\n\n"
+                                        f"**Game timed out...***", view=self,
+                                allowed_mentions=discord.AllowedMentions.none())
+
 
 class GobbletButton(discord.ui.Button["PlayerUI"]):
     def __init__(self, x, y, color: str):
@@ -391,7 +400,7 @@ class PlayerUI(discord.ui.View):
 
 class Prompt(discord.ui.View):
     def __init__(self, author, member):
-        super().__init__(timeout=180.0)
+        super().__init__(timeout=300.0)
         self.author: discord.Member = author
         self.member: discord.Member = member
         self.message: discord.Message = None
