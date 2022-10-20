@@ -24,9 +24,9 @@ class Meta(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
         os.system("git pull origin master")
-        subprocess.run("nohup python3 -u bot.py &>> activity.log &", shell=True)
+        subprocess.run("nohup python3 -u home/StarBot/bot.py &>> activity.log &", shell=True)
         await self.bot.db.close()
-        await ctx.bot.close
+        await ctx.bot.close()
         sys.exit()
 
 
