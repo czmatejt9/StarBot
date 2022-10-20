@@ -41,6 +41,12 @@ class General(commands.Cog):
         """Sends ephemeral message"""
         await ctx.send("Shh! Only you can see this", ephemeral=True)
 
+    @commands.hybrid_command(name="tip")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def tip(self, ctx: commands.Context):
+        """Sends daily tip"""
+        await ctx.send("Coming soon!", ephemeral=True)  # TODO
+
     @commands.hybrid_command(name="time")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def time(self, ctx: commands.Context):

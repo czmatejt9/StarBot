@@ -6,6 +6,9 @@ import discord
 from discord.ext import commands
 from bot import StarCityBot
 
+# the file you are running your bot on linux
+file_location = "/home/vronvron/StarBot/bot.py"
+
 
 class Meta(commands.Cog):
     """Some high level commands only for the owner of the bot"""
@@ -23,8 +26,9 @@ class Meta(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
+        """Restarts the bot with new code from github repo"""
         os.system("git pull origin master")
-        subprocess.run("nohup python3 -u /home/vronvron/StarBot/bot.py &>> activity.log &", shell=True)
+        subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
         await ctx.bot.close()
         await self.bot.db.close()
         sys.exit()
