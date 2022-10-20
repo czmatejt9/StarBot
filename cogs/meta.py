@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 from bot import StarCityBot
 
-# the file you are running your bot on linux
+# the file you are running your bot on linux, used for restarting the bot
 file_location = "/home/vronvron/StarBot/bot.py"
 
 
@@ -27,6 +27,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
         """Restarts the bot with new code from github repo"""
+        await ctx.send(str(os.getpid()))
         os.system("git pull origin master")
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
         await ctx.bot.close()
