@@ -34,7 +34,7 @@ class General(commands.Cog):
     @app_commands.describe(lowest="min value", highest="max value")
     async def number(self, ctx: commands.Context, lowest: int, highest: int):
         """Returns an integer between specified values"""
-        await ctx.send(f"The selected number from `{lowest} to {highest}` is {random.randint(lowest, highest)}!")
+        await ctx.send(f"The random number from `{lowest} to {highest}` is {random.randint(lowest, highest)}!")
 
     @random.command(name="float")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
