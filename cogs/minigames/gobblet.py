@@ -236,7 +236,7 @@ class Board(discord.ui.View):
     async def update_new_ui(self, player_id):  # TODO edit this, to reflect current state
         p = self.get_player(player_id)
         p.update_embed()
-        if p.is_turn and "Move" not in p.action and p.selected_piece:
+        if p.is_turn and "Move" not in p.action:
             for child in p.view.children:
                 if "piece" not in child.custom_id:
                     child.disabled = False
