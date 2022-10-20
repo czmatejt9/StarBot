@@ -31,7 +31,6 @@ class Meta(commands.Cog):
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
         await ctx.bot.close()
         await self.bot.db.close()
-        os.system(f"kill -9 {os.getpid()}")
         sys.exit()
 
 

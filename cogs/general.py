@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 import aiosqlite
 import pytz
@@ -5,7 +6,10 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from bot import StarCityBot, MY_GUILD_ID
-from utilities import coinflip
+
+
+def coinflip():
+    return random.randint(0, 1)
 
 
 class General(commands.Cog):
