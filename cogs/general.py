@@ -5,11 +5,12 @@ import pytz
 import discord
 from discord.ext import commands
 from discord import app_commands
-from bot import StarCityBot, MY_GUILD_ID
+from bot import StarCityBot, MY_GUILD_ID, mybot
 
 
 def coinflip():
     return random.randint(0, 1)
+
 
 class General(commands.Cog):
     """Some basic fun commands that don't fit into other categories"""
@@ -22,7 +23,7 @@ class General(commands.Cog):
             await member.create_dm()
         await member.dm_channel.send(f"Welcome to {member.guild.name}")
 
-    @commands.hybrid_group(pass_context=True, fallback="get", with_app_command=True)  # TODO add more random commands
+    @mybot.hybrid_group(fallbakck="get", pass_context=True, with_app_command=True)
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def random(self, ctx: commands.Context):
         """Some random generators"""
@@ -33,7 +34,13 @@ class General(commands.Cog):
     @app_commands.describe(lowest="min value", highest="max value")
     async def number(self, ctx: commands.Context, lowest: int, highest: int):
         """Returns an integer between specified values"""
-        await ctx.send(f"The selected number is {random.randint(lowest, highest)}!")
+        await ctx.send(f"The selected number from `{lowest} to {highest}` is {random.randint(lowest, highest)}!")
+
+    @random.command(name="float")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def float(self, ctx: commands.Context):
+        """Returns random float between 0 and 1"""
+        await ctx.send(f"The random number between 0 and 1 is {random.uniform(0, 1)}!")
 
     @commands.hybrid_command(name="hi", aliases=["hello"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
