@@ -1,7 +1,8 @@
 import os
 import logging
 import time
-
+from datetime import datetime
+import pytz
 import aiosqlite
 import discord
 from discord.ext import commands
@@ -11,6 +12,7 @@ import config
 
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
+LOG_CHANNEL_ID = config.LOG_CHANNEL_ID
 DEFAULT_PREFIX = "s!"
 DB_NAME = "bot.db"
 EXTENSIONS = (
@@ -73,8 +75,9 @@ class StarCityBot(commands.Bot):
         await self.setup_db()
 
     async def on_ready(self):
-        print("Running...")
-        # TODO
+        channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
+        embed = discord.Embed(description="Started running...", timestamp=datetime.now(tz=pytz.timezone("Europe/Berlin")))
+        await channel.send(embed=embed)
 
     async def get_prefix(self, message: discord.Message):
         if message.guild is None:
