@@ -11,9 +11,8 @@ from bot import StarCityBot, MY_GUILD_ID
 def coinflip():
     return random.randint(0, 1)
 
-
 class General(commands.Cog):
-    """Some basic commands that don't fit into other categories"""
+    """Some basic fun commands that don't fit into other categories"""
     def __init__(self, bot):
         self.bot: StarCityBot = bot
 
@@ -22,6 +21,19 @@ class General(commands.Cog):
         if member.dm_channel is None:
             await member.create_dm()
         await member.dm_channel.send(f"Welcome to {member.guild.name}")
+
+    @commands.hybrid_group(pass_context=True, fallback="get", with_app_command=True)  # TODO add more random commands
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def random(self, ctx: commands.Context):
+        """Some random generators"""
+        await ctx.send("Use random + name of the subcommand")
+
+    @random.command(name="number")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    @app_commands.describe(lowest="min value", highest="max value")
+    async def number(self, ctx: commands.Context, lowest: int, highest: int):
+        """Returns an integer between specified values"""
+        await ctx.send(f"The selected number is {random.randint(lowest, highest)}!")
 
     @commands.hybrid_command(name="hi", aliases=["hello"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
@@ -54,7 +66,7 @@ class General(commands.Cog):
 
     @commands.hybrid_command(name="coinflip")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def reminder(self, ctx: commands.Context):
+    async def flip_a_coin(self, ctx: commands.Context):
         """Flips a coin"""
         if coinflip():
             await ctx.send("Heads!")
