@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from bot import StarCityBot, MY_GUILD_ID
+from minigames.utilities import coinflip
 
 
 class General(commands.Cog):
@@ -46,6 +47,15 @@ class General(commands.Cog):
     async def tip(self, ctx: commands.Context):
         """Sends daily tip"""
         await ctx.send("Coming soon!", ephemeral=True)  # TODO
+
+    @commands.hybrid_command(name="coinflip")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def reminder(self, ctx: commands.Context):
+        """Flips a coin"""
+        if coinflip():
+            await ctx.send("Heads!")
+            return
+        await ctx.send("Tails!")
 
     @commands.hybrid_command(name="time")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
