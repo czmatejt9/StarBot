@@ -21,7 +21,7 @@ class Meta(commands.Cog):
 
     async def turn_off(self, command_name: str):
         channel = self.bot.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-        embed = discord.Embed(description=f"Shuting down due to {command_name} command...",
+        embed = discord.Embed(description=f"Shuting down due to **{command_name}** command...",
                               timestamp=datetime.now(tz=pytz.timezone("Europe/Berlin")))
         await channel.send(embed=embed)
         await self.bot.close()
