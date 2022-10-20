@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from bot import StarCityBot, MY_GUILD_ID
-from minigames.utilities import coinflip
+from minigames import utilities
 
 
 class General(commands.Cog):
@@ -52,7 +52,7 @@ class General(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def reminder(self, ctx: commands.Context):
         """Flips a coin"""
-        if coinflip():
+        if utilities.coinflip():
             await ctx.send("Heads!")
             return
         await ctx.send("Tails!")

@@ -29,9 +29,9 @@ class Meta(commands.Cog):
         """Restarts the bot with new code from github repo"""
         os.system("git pull origin master")
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
-        os.system(f"kill -9 {os.getpid()}")
         await ctx.bot.close()
         await self.bot.db.close()
+        os.system(f"kill -9 {os.getpid()}")
         sys.exit()
 
 
