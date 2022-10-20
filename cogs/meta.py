@@ -1,6 +1,9 @@
+import os
+import time
+import sys
 import discord
 from discord.ext import commands
-from bot import StarCityBot, DEFAULT_PREFIX
+from bot import StarCityBot
 
 
 class Meta(commands.Cog):
@@ -15,6 +18,13 @@ class Meta(commands.Cog):
         await ctx.send("Shutting down...")
         await self.bot.db.close()
         await ctx.bot.close()
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def update(self, ctx: commands.Context):
+        os.system("git pull origin master")
+        time.sleep(5)
+        os.execv(sys.argv[0], sys.argv)
 
 
 async def setup(bot: StarCityBot):

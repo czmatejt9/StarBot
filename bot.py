@@ -4,14 +4,13 @@ import logging
 import aiosqlite
 import discord
 from discord.ext import commands
-from replit import db
 import config
 # from dotenv import load_dotenv
 # load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), "variables.env"))
 
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
-DEFAULT_PREFIX = "sc "
+DEFAULT_PREFIX = "s!"
 DB_NAME = "bot.db"
 EXTENSIONS = (
     "cogs.general",

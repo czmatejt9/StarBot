@@ -4,7 +4,7 @@ from discord.ext import commands
 from bot import StarCityBot
 
 
-class Mod(commands.Cog):
+class Mods(commands.Cog):
     """Some commands for mods on servers"""
     def __init__(self, bot):
         self.bot: StarCityBot = bot
@@ -23,4 +23,4 @@ class Mod(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Mod(bot))
+    await bot.add_cog(Mods(bot))

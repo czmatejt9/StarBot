@@ -321,6 +321,7 @@ class Board(discord.ui.View):
     async def on_timeout(self) -> None:
         for child in self.children:
             child.disabled = True
+        self.message = await self.message.channel.fetch_message(self.message.id)
         await self.message.edit(content=f"**Gobblet gobblers**\n{self.p1.p.mention}({self.p1.color}) vs "
                                         f"{self.p2.p.mention}({self.p2.color})\n"
                                         f"{self.p1.p.mention}: ✅\n{self.p2.p.mention}: ✅\n\n"
