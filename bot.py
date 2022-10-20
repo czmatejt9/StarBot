@@ -39,6 +39,15 @@ class StarCityBot(commands.Bot):
         self.db: aiosqlite.Connection = None
         # TODO your initialization
 
+    async def setup_db(self):
+        # connecting to sqlite database and creating tables if they don't exist
+        self.db = await aiosqlite.connect(DB_NAME)
+        async with self.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("CREATE TABLE IF NOT EXISTS guilds (guild_id INTEGER NOT NULL, prefix TEXT NOT NULL,"
+                                 "system_channel_id TEXT ,PRIMARY KEY (guild_id))")
+        await self.db.commit()  # TODO CREATE TABLE FOR USERS
+
     async def setup_hook(self) -> None:
         # loading extensions
         for extension in EXTENSIONS:
@@ -53,13 +62,7 @@ class StarCityBot(commands.Bot):
             print(f"synced slash commands for {self.user}")
             self.synced = True
 
-        # connecting to sqlite database and creating tables if they don't exist
-        self.db = await aiosqlite.connect(DB_NAME)
-        async with self.db.cursor() as cursor:
-            cursor: aiosqlite.Cursor
-            await cursor.execute("CREATE TABLE IF NOT EXISTS guilds (guild_id INTEGER NOT NULL, prefix TEXT NOT NULL,"
-                                 "PRIMARY KEY (guild_id))")
-        await self.db.commit()  # TODO CREATE TABLE FOR USERS
+        await self.setup_db()
 
     async def on_ready(self):
         print("Running...")
@@ -75,7 +78,7 @@ class StarCityBot(commands.Bot):
             prefix = await cursor.fetchone()
             if prefix is None:  # we assign the default prefix and upload it to db
                 prefix = DEFAULT_PREFIX
-                await cursor.execute("INSERT INTO guilds VALUES (?, ?)", (message.guild.id, prefix))
+                await cursor.execute("INSERT INTO guilds VALUES (?, ?, ?)", (message.guild.id, prefix, None))
                 await self.db.commit()
             else:
                 prefix = prefix[0]
