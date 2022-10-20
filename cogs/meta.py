@@ -1,3 +1,4 @@
+import asyncio
 import os
 from datetime import datetime
 import pytz
@@ -37,6 +38,7 @@ class Meta(commands.Cog):
     async def update(self, ctx: commands.Context):
         """Restarts the bot with new code from github repo"""
         os.system("git pull origin master")
+        await asyncio.sleep(5)
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
         await self.turn_off("update")
 

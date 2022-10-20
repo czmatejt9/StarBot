@@ -75,6 +75,7 @@ class StarCityBot(commands.Bot):
         await self.setup_db()
 
     async def on_ready(self):
+        print("running...")
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
         embed = discord.Embed(description="Started running...", timestamp=datetime.now(tz=pytz.timezone("Europe/Berlin")))
         await channel.send(embed=embed)
