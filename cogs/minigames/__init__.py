@@ -15,7 +15,7 @@ class Minigames(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def game(self, ctx: commands.Context):
         """Some minigames to play with other users"""
-        await ctx.send("Type the name of the game you wanna play")
+        await ctx.send("Use game + name of the game + opponent")
 
     @game.command(name="xo", aliases=["tic", "tictactoe"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
