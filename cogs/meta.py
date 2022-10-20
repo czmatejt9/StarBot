@@ -27,9 +27,9 @@ class Meta(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
         """Restarts the bot with new code from github repo"""
-        await ctx.send(str(os.getpid()))
         os.system("git pull origin master")
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
+        os.system(f"kill -9 {os.getpid()}")
         await ctx.bot.close()
         await self.bot.db.close()
         sys.exit()
