@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 
 import aiosqlite
 import discord
@@ -22,7 +23,7 @@ log = logging.getLogger(__name__)  # TODO logging
 
 
 class StarCityBot(commands.Bot):
-    def __init__(self, command_prefix):
+    def __init__(self):
         intents = discord.Intents(
             guilds=True,
             members=True,
@@ -95,6 +96,7 @@ class StarCityBot(commands.Bot):
             await ctx.send(str(error))
 
 
-mybot = StarCityBot(DEFAULT_PREFIX)
+mybot = StarCityBot()
 if __name__ == "__main__":
+    time.sleep(10)
     mybot.run(TOKEN)

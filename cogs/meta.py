@@ -1,4 +1,5 @@
 import os
+import subprocess
 import time
 import sys
 import discord
@@ -23,8 +24,10 @@ class Meta(commands.Cog):
     @commands.is_owner()
     async def update(self, ctx: commands.Context):
         os.system("git pull origin master")
-        time.sleep(5)
-        os.execv(sys.argv[0], sys.argv)
+        subprocess.run("nohup python3 -u bot.py &>> activity.log &", shell=True)
+        await self.bot.db.close()
+        await ctx.bot.close
+        sys.exit()
 
 
 async def setup(bot: StarCityBot):
