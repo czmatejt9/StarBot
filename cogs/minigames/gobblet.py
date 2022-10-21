@@ -325,7 +325,7 @@ class Board(discord.ui.View):
         await self.message.edit(content=f"**Gobblet gobblers**\n{self.p1.p.mention}({self.p1.color}) vs "
                                         f"{self.p2.p.mention}({self.p2.color})\n"
                                         f"{self.p1.p.mention}: ✅\n{self.p2.p.mention}: ✅\n\n"
-                                        f"**Game timed out...***", view=self,
+                                        f"**Game timed out...**", view=self,
                                 allowed_mentions=discord.AllowedMentions.none())
 
 
