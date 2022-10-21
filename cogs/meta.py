@@ -51,7 +51,7 @@ class Meta(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     @home_channel()
-    async def eval(self, ctx: commands.Context, msg: str):
+    async def eval(self, ctx: commands.Context, *, msg: str):
         eval(msg)
 
 
