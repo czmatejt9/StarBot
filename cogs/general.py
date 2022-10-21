@@ -40,7 +40,7 @@ class General(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def float(self, ctx: commands.Context):
         """Returns random float between 0 and 1"""
-        await ctx.send(f"The random number between 0 and 1 is {random.uniform(0, 1)}!")
+        await ctx.send(f"The random number between `0 and 1` is {random.uniform(0, 1)}!")
 
     @commands.hybrid_command(name="hi", aliases=["hello"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
