@@ -102,13 +102,12 @@ class StarCityBot(commands.Bot):
             await ctx.author.send('This command cannot be used in private messages.')
         elif isinstance(error, commands.DisabledCommand):
             await ctx.author.send('Sorry. This command is disabled and cannot be used.')
-        elif isinstance(error, commands.CommandInvokeError):
-            original = error.original
-            if not isinstance(original, discord.HTTPException):
-                log.exception('In %s:', ctx.command.qualified_name, exc_info=original)
         elif isinstance(error, (commands.ArgumentParsingError, commands.MissingRequiredArgument)):
-            print(error)
             await ctx.send(str(error))
+        else:
+            channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
+            embed = discord.Embed(description=error, timestamp=datetime.now(pytz.timezone("Europe/Berlin")))
+            await channel.send(embed=embed)
 
 
 mybot = StarCityBot()

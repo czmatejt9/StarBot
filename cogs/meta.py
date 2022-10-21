@@ -14,7 +14,7 @@ file_location = "/home/vronvron/StarBot/bot.py"
 
 
 class Meta(commands.Cog):
-    """Some high level commands only for the owner of the bot"""
+    """Some high level commands related to bot and dc"""
     def __init__(self, bot):
         super().__init__()
         self.bot: StarCityBot = bot
@@ -41,6 +41,18 @@ class Meta(commands.Cog):
         await asyncio.sleep(5)
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
         await self.turn_off("update")
+
+    # check for eval func
+    def home_channel(self):
+        def predicate(ctx: commands.Context):
+            return ctx.channel.id == 1029465706212905183
+        return commands.check(predicate)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    @home_channel()
+    async def eval(self, ctx: commands.Context, msg: str):
+        eval(msg)
 
 
 async def setup(bot: StarCityBot):
