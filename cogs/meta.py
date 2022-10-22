@@ -6,11 +6,10 @@ import sys
 from typing import Optional
 import discord
 from discord.ext import commands
-from bot import StarCityBot, HOME_PATH
+from bot import StarCityBot, HOME_PATH, logger
 
 # the file you are running your bot on linux, used for restarting the bot via update command
 file_location = f"{HOME_PATH}/bot.py"
-logger = logging.getLogger(__name__)
 
 
 class Meta(commands.Cog):
