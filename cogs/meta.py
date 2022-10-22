@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 from bot import StarCityBot, HOME_PATH, logger
 
+logger.name = __name__
 # the file you are running your bot on linux, used for restarting the bot via update command
 file_location = f"{HOME_PATH}/bot.py"
 
