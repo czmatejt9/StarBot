@@ -47,6 +47,8 @@ class Meta(commands.Cog):
 
     @commands.command(hidden=True, name="log")
     async def send_log(self, ctx: commands.Context, number: Optional[int]):
+        if number is None:
+            number = ""
         file = discord.File(f"{HOME_PATH}/StarBot.log{number}")
         await ctx.send(file=file)
 

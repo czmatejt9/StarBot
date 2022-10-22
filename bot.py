@@ -123,8 +123,8 @@ class StarCityBot(commands.Bot):
         elif isinstance(error, commands.CommandNotFound):
             await ctx.send(f"{str(error)}. Try using the help command")
         else:
-            await self.log_to_channel(str(error))
             logger.exception(str(error))
+            await self.log_to_channel(str(error))
 
     async def log_to_channel(self, msg: str):
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
