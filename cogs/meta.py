@@ -51,6 +51,10 @@ class Meta(commands.Cog):
         file = discord.File(f"{HOME_PATH}/StarBot.log{number}")
         await ctx.send(file=file)
 
+    @commands.command(hidden=True, name="info")
+    async def write_log(self, ctx: commands.Context, msg: str):
+        logger.info(msg)
+
 
 async def setup(bot: StarCityBot):
     await bot.add_cog(Meta(bot))
