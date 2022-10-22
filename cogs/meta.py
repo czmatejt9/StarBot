@@ -1,37 +1,38 @@
 import asyncio
+import logging
 import os
 import subprocess
 import sys
 import discord
 from discord.ext import commands
-from bot import StarCityBot, MY_GUILD_ID, LOG_CHANNEL_ID
+from bot import StarCityBot, HOME_PATH
 
-# the file you are running your bot on linux, used for restarting the bot
-file_location = "/home/vronvron/StarBot/bot.py"
+# the file you are running your bot on linux, used for restarting the bot via update command
+file_location = f"{HOME_PATH}/bot.py"
+logger = logging.getLogger(__name__)
 
 
 class Meta(commands.Cog):
-    """Some high level commands related to bot and dc"""
+    """Some commands for the owner of the bot"""
     def __init__(self, bot):
         super().__init__()
         self.bot: StarCityBot = bot
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        return await self.bot.is_owner(ctx.author)
+
     async def turn_off(self, command_name: str):
-        channel = self.bot.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-        embed = discord.Embed(description=f"Shuting down due to **{command_name}** command...",
-                              timestamp=discord.utils.utcnow())
-        await channel.send(embed=embed)
+        logger.info(f"Shuting down due to **{command_name}** command...")
+        await self.bot.log_to_channel(f"INFO: Shuting down due to **{command_name}** command...")
         await self.bot.close()
         await self.bot.db.close()
         sys.exit()
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def shutdown(self, ctx: commands.Context):
         await self.turn_off("shutdown")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def update(self, ctx: commands.Context):
         """Restarts the bot with new code from github repo"""
         os.system("git pull origin master")
@@ -40,7 +41,6 @@ class Meta(commands.Cog):
         await self.turn_off("update")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
     async def eval(self, ctx: commands.Context, *, msg: str):
         eval(msg)
 
