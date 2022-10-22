@@ -3,6 +3,7 @@ import logging
 import os
 import subprocess
 import sys
+from typing import Optional
 import discord
 from discord.ext import commands
 from bot import StarCityBot, HOME_PATH
@@ -43,6 +44,11 @@ class Meta(commands.Cog):
     @commands.command(hidden=True)
     async def eval(self, ctx: commands.Context, *, msg: str):
         eval(msg)
+
+    @commands.command(hidden=True, name="log")
+    async def send_log(self, ctx: commands.Context, number: Optional[int]):
+        file = discord.File(f"{HOME_PATH}/StarBot.log{number}")
+        await ctx.send(file=file)
 
 
 async def setup(bot: StarCityBot):
