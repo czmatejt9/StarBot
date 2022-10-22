@@ -22,14 +22,14 @@ EXTENSIONS = (
 )
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 logging.getLogger('discord.http').setLevel(logging.INFO)
 
 handler = logging.handlers.RotatingFileHandler(
     filename='StarBot.log',
     encoding='utf-8',
     maxBytes=8 * 1024 * 1024,  # 8 MiB
-    backupCount=5,  # Rotate through 5 files
+    backupCount=10,  # Rotate through 10 files
 )
 dt_fmt = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name:<15}: {message}', dt_fmt, style='{')
