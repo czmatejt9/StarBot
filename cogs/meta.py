@@ -22,9 +22,6 @@ class Meta(commands.Cog):
     async def cog_check(self, ctx: commands.Context) -> bool:
         return await self.bot.is_owner(ctx.author)
 
-    async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
-        await self.bot.on_command_error(ctx, error)
-
     async def turn_off(self, command_name: str):
         logger.info(f"Shuting down due to **{command_name}** command...")
         await self.bot.log_to_channel(f"Shuting down due to **{command_name}** command...")

@@ -114,6 +114,7 @@ class StarCityBot(commands.Bot):
         if isinstance(error, (commands.MissingPermissions, commands.CheckFailure)):
             await ctx.send('You do not have permissions for this command')
             logger.debug(f"{ctx.author.name} used **{ctx.invoked_with}** without needed permissions")
+            logger.debug(error)
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.author.send('This command cannot be used in private messages.')
         elif isinstance(error, commands.DisabledCommand):
