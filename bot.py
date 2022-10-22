@@ -83,16 +83,14 @@ class StarCityBot(commands.Bot):
         # syncs slash commands
         if not self.synced:
             await self.tree.sync(guild=discord.Object(id=MY_GUILD_ID))
-            print(f"synced slash commands for {self.user}")
+            logger.info(f"synced slash commands for {self.user}")
             self.synced = True
 
         await self.setup_db()
 
     async def on_ready(self):
-        print("running...")
-        channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-        embed = discord.Embed(description="Started running...", timestamp=discord.utils.utcnow())
-        await channel.send(embed=embed)
+        logger.info(f"Started running as {self.user}")
+        await self.log_to_channel(f"Started running as {self.user}")
 
     async def get_prefix(self, message: discord.Message):
         if message.guild is None:
