@@ -112,12 +112,12 @@ class StarCityBot(commands.Bot):
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, (commands.MissingPermissions, commands.CheckFailure)):
-            await ctx.send('You do not have permissions for this command', ephemeral=True)
+            await ctx.send('You do not have permissions for this command')
             logger.debug(f"{ctx.author.name} used {ctx.invoked_with} without needed permissions")
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.author.send('This command cannot be used in private messages.')
         elif isinstance(error, commands.DisabledCommand):
-            await ctx.send('Sorry. This command is disabled and cannot be used.', ephemeral=True)
+            await ctx.send('Sorry. This command is disabled and cannot be used.')
         elif isinstance(error, (commands.ArgumentParsingError, commands.MissingRequiredArgument)):
             await ctx.send(str(error))
         elif isinstance(error, commands.CommandNotFound):
