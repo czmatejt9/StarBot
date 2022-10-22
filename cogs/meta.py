@@ -23,19 +23,21 @@ class Meta(commands.Cog):
         return await self.bot.is_owner(ctx.author)
 
     async def turn_off(self, command_name: str):
+        """logs info when shutting down/restarting"""
         logger.info(f"Shuting down due to **{command_name}** command...")
         await self.bot.log_to_channel(f"Shuting down due to **{command_name}** command...")
-        await self.bot.close()
         await self.bot.db.close()
+        await self.bot.close()
         sys.exit()
 
     @commands.command(hidden=True)
     async def shutdown(self, ctx: commands.Context):
+        """shuts down the bot"""
         await self.turn_off("shutdown")
 
     @commands.command(hidden=True)
     async def update(self, ctx: commands.Context):
-        """Restarts the bot with new code from github repo"""
+        """Restarts the bot with updated code from github repo"""
         os.system("git pull origin master")
         await asyncio.sleep(5)
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
@@ -47,6 +49,7 @@ class Meta(commands.Cog):
 
     @commands.command(hidden=True, name="log")
     async def send_log(self, ctx: commands.Context, number: Optional[int]):
+        """sends log file directly to discord"""
         if number is None:
             number = ""
         file = discord.File(f"{HOME_PATH}/StarBot.log{number}")
@@ -54,6 +57,7 @@ class Meta(commands.Cog):
 
     @commands.command(hidden=True, name="info")
     async def write_log(self, ctx: commands.Context, *, msg: str):
+        """writes info to log file"""
         logger.info(msg)
 
 

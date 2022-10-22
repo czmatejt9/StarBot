@@ -1,3 +1,4 @@
+"""Some utilities used in minigames"""  # TODO move the general prompt here
 import random
 
 

@@ -1,4 +1,3 @@
-import os
 import logging
 import logging.handlers
 import time
@@ -55,7 +54,7 @@ class StarCityBot(commands.Bot):
         self.db: aiosqlite.Connection = None
 
     async def setup_db(self):
-        # connecting to sqlite database and creating tables if they don't exist
+        """connecting to sqlite database and creating tables if they don't exist"""
         self.db = await aiosqlite.connect(DB_NAME)
         async with self.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
@@ -94,6 +93,7 @@ class StarCityBot(commands.Bot):
         await self.log_to_channel(f"Started running as {self.user}")
 
     async def get_prefix(self, message: discord.Message):
+        """gets prefix for current guild from db"""
         if message.guild is None:
             return DEFAULT_PREFIX
 
@@ -111,6 +111,7 @@ class StarCityBot(commands.Bot):
         return prefix
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        """some command error handling"""
         if isinstance(error, (commands.MissingPermissions, commands.CheckFailure)):
             await ctx.send('You do not have permissions for this command')
             logger.debug(f"{ctx.author.name} used **{ctx.invoked_with}** without needed permissions")
@@ -127,6 +128,7 @@ class StarCityBot(commands.Bot):
             await self.log_to_channel(f"**{ctx.invoked_with}** {error}")
 
     async def log_to_channel(self, msg: str):
+        """sends log info directly to discord channel"""
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
         embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
@@ -134,5 +136,5 @@ class StarCityBot(commands.Bot):
 
 mybot = StarCityBot()
 if __name__ == "__main__":
-    time.sleep(10)
+    time.sleep(5)  # to ensure the bot starts after shutting down previous instance (update command)
     mybot.run(TOKEN, log_handler=None)

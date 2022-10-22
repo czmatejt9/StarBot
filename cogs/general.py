@@ -19,6 +19,7 @@ class General(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        """Greets user in dms when he joins a server"""
         if member.dm_channel is None:
             await member.create_dm()
         await member.dm_channel.send(f"Welcome to {member.guild.name}")
