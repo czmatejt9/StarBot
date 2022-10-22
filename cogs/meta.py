@@ -52,7 +52,7 @@ class Meta(commands.Cog):
         await ctx.send(file=file)
 
     @commands.command(hidden=True, name="info")
-    async def write_log(self, ctx: commands.Context, msg: str):
+    async def write_log(self, ctx: commands.Context, *, msg: str):
         logger.info(msg)
 
 
