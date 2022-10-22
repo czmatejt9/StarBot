@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import logging
 import os
 import subprocess
@@ -45,7 +46,7 @@ class Meta(commands.Cog):
 
     @commands.command(hidden=True)
     async def eval(self, ctx: commands.Context, *, msg: str):
-        eval(msg)
+        await ctx.send("#TODO")  # TODO
 
     @commands.command(hidden=True, name="log")
     async def send_log(self, ctx: commands.Context, number: Optional[int]):
@@ -59,6 +60,18 @@ class Meta(commands.Cog):
     async def write_log(self, ctx: commands.Context, *, msg: str):
         """writes info to log file"""
         logger.info(msg)
+
+    @commands.command(hidden=True)
+    async def sudo(self, ctx: commands.Context, channel: Optional[discord.TextChannel],
+                   user: discord.Member, *, command: str):
+        """Runs a command as another user"""
+        msg = copy.copy(ctx.message)
+        new_channel = channel or ctx.channel
+        msg.channel = new_channel
+        msg.author = user
+        msg.content = ctx.prefix + command
+        new_ctx = await self.bot.get_context(msg, cls=type(ctx))
+        await self.bot.invoke(new_ctx)
 
 
 async def setup(bot: StarCityBot):
