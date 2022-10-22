@@ -1,8 +1,6 @@
 import os
 import logging
 import time
-from datetime import datetime
-import pytz
 import aiosqlite
 import discord
 from discord.ext import commands
@@ -64,7 +62,7 @@ class StarCityBot(commands.Bot):
             try:
                 await self.load_extension(extension)
             except Exception as e:
-                log.exception(f'Failed to load extension {extension}')
+                log.exception(f'Failed to load extension {extension}')  # TODO send this to log channel cuz why not lol
 
         # syncs slash commands
         if not self.synced:
@@ -77,7 +75,7 @@ class StarCityBot(commands.Bot):
     async def on_ready(self):
         print("running...")
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-        embed = discord.Embed(description="Started running...", timestamp=datetime.now(tz=pytz.timezone("Europe/Berlin")))
+        embed = discord.Embed(description="Started running...", timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
 
     async def get_prefix(self, message: discord.Message):
@@ -106,7 +104,7 @@ class StarCityBot(commands.Bot):
             await ctx.send(str(error))
         else:
             channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-            embed = discord.Embed(description=error, timestamp=datetime.now(pytz.timezone("Europe/Berlin")))
+            embed = discord.Embed(description=error, timestamp=discord.utils.utcnow())
             await channel.send(embed=embed)
 
 

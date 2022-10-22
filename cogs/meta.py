@@ -1,9 +1,6 @@
 import asyncio
 import os
-from datetime import datetime
-import pytz
 import subprocess
-import time
 import sys
 import discord
 from discord.ext import commands
@@ -22,7 +19,7 @@ class Meta(commands.Cog):
     async def turn_off(self, command_name: str):
         channel = self.bot.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
         embed = discord.Embed(description=f"Shuting down due to **{command_name}** command...",
-                              timestamp=datetime.now(tz=pytz.timezone("Europe/Berlin")))
+                              timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
         await self.bot.close()
         await self.bot.db.close()
@@ -42,15 +39,8 @@ class Meta(commands.Cog):
         subprocess.run(f"nohup python3 -u {file_location} &>> activity.log &", shell=True)
         await self.turn_off("update")
 
-    # check for eval func
-    def home_channel(self):
-        def predicate(ctx: commands.Context):
-            return ctx.channel.id == 1029465706212905183
-        return commands.check(predicate)
-
     @commands.command(hidden=True)
     @commands.is_owner()
-    @home_channel()
     async def eval(self, ctx: commands.Context, *, msg: str):
         eval(msg)
 
