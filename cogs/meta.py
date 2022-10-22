@@ -24,7 +24,7 @@ class Meta(commands.Cog):
 
     async def turn_off(self, command_name: str):
         logger.info(f"Shuting down due to **{command_name}** command...")
-        await self.bot.log_to_channel(f"INFO: Shuting down due to **{command_name}** command...")
+        await self.bot.log_to_channel(f"Shuting down due to **{command_name}** command...")
         await self.bot.close()
         await self.bot.db.close()
         sys.exit()
