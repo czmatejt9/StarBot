@@ -113,7 +113,7 @@ class StarCityBot(commands.Bot):
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         if isinstance(error, (commands.MissingPermissions, commands.CheckFailure)):
             await ctx.send('You do not have permissions for this command')
-            logger.debug(f"{ctx.author.name} used {ctx.invoked_with} without needed permissions")
+            logger.debug(f"{ctx.author.name} used **{ctx.invoked_with}** without needed permissions")
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.author.send('This command cannot be used in private messages.')
         elif isinstance(error, commands.DisabledCommand):
@@ -123,8 +123,8 @@ class StarCityBot(commands.Bot):
         elif isinstance(error, commands.CommandNotFound):
             await ctx.send(f"{str(error)}. Try using the help command")
         else:
-            logger.exception(f"{ctx.invoked_with} {error}")
-            await self.log_to_channel(f"{ctx.invoked_with} {error}")
+            logger.exception(f"**{ctx.invoked_with}** {error}")
+            await self.log_to_channel(f"**{ctx.invoked_with}** {error}")
 
     async def log_to_channel(self, msg: str):
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
