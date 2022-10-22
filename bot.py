@@ -2,6 +2,7 @@ import os
 import logging
 import logging.handlers
 import time
+import os
 import aiosqlite
 import discord
 from discord.ext import commands
@@ -12,7 +13,7 @@ TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
 LOG_CHANNEL_ID = config.LOG_CHANNEL_ID
 DEFAULT_PREFIX = "s!"
-HOME_PATH = "/home/vronvron/StarBot"
+HOME_PATH = os.path.dirname(os.path.abspath(__name__))
 DB_NAME = "bot.db"
 EXTENSIONS = (
     "cogs.general",
@@ -72,6 +73,8 @@ class StarCityBot(commands.Bot):
         await self.db.commit()  # TODO CREATE TABLE FOR USERS
 
     async def setup_hook(self) -> None:
+        # sqlite
+        await self.setup_db()
         # loading extensions
         for extension in EXTENSIONS:
             try:
@@ -85,8 +88,6 @@ class StarCityBot(commands.Bot):
             await self.tree.sync(guild=discord.Object(id=MY_GUILD_ID))
             logger.info(f"synced slash commands for {self.user}")
             self.synced = True
-
-        await self.setup_db()
 
     async def on_ready(self):
         logger.info(f"Started running as {self.user}")
