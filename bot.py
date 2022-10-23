@@ -52,24 +52,21 @@ class StarCityBot(commands.Bot):
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
         self.db: aiosqlite.Connection = None
+        self.session_id = None
 
     async def setup_db(self):
         """connecting to sqlite database and creating tables if they don't exist"""
         self.db = await aiosqlite.connect(DB_NAME)
         async with self.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            await cursor.execute("CREATE TABLE IF NOT EXISTS guilds (guild_id INTEGER NOT NULL, prefix TEXT NOT NULL,"
-                                 "system_channel_id TEXT ,PRIMARY KEY (guild_id))")
-            await cursor.execute("CREATE TABLE IF NOT EXISTS sessions (pid INT)")
-            await cursor.execute("SELECT pid from sessions")
+            await cursor.execute("SELECT (id, pid) FROM sessions WHERE id = max(SELECT id FROM sessions)")
             pid = await cursor.fetchone()
-            if pid is not None:
-                pid = pid[0]
-                os.system(f"kill -9 {pid}")
-            else:
-                await cursor.execute("INSERT INTO sessions values (?)", (0, ))
-            await cursor.execute("UPDATE sessions SET pid = ?", (os.getpid(), ))
-        await self.db.commit()  # TODO CREATE TABLE FOR USERS
+            _id, pid = pid
+            os.system(f"kill {pid}")  # killing previous session
+            await cursor.execute("INSERT INTO sessions VALUES (?, ?, ?, ?)",
+                                 (_id + 1, os.getpid(), discord.utils.utcnow(), None))
+        await self.db.commit()
+        self.session_id = _id + 1
 
     async def setup_hook(self) -> None:
         # sqlite
@@ -119,6 +116,8 @@ class StarCityBot(commands.Bot):
             await ctx.author.send('This command cannot be used in private messages.')
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send('Sorry. This command is disabled and cannot be used.')
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(f"Please wait {round(error.retry_after)} seconds before using this command again")
         elif isinstance(error, (commands.ArgumentParsingError, commands.MissingRequiredArgument)):
             await ctx.send(str(error))
         elif isinstance(error, commands.CommandNotFound):
