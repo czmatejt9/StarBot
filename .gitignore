@@ -9,3 +9,4 @@ variables.env
 bot.db
 database.db
 cogs/__pycache__
+StarBot.log

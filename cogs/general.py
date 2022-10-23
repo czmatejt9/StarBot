@@ -51,7 +51,7 @@ class General(commands.Cog):
             cursor: aiosqlite.Cursor
             await cursor.execute("SELECT prefix FROM guilds WHERE guild_id = ?", (ctx.guild.id, ))
             prefix = await cursor.fetchone()
-            prefix = prefix[0]
+            prefix = prefix[0] if prefix is not None else self.bot.command_prefix
         await ctx.send(f"Hi {ctx.author.name}! Prefix for this server is `{prefix}`")
 
     @commands.hybrid_command(name="ping")

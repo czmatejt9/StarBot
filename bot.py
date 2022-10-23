@@ -18,7 +18,8 @@ EXTENSIONS = (
     "cogs.general",
     "cogs.minigames",
     "cogs.mods",
-    "cogs.meta"
+    "cogs.meta",
+    "cogs.currency",
 )
 
 logger = logging.getLogger(__name__)
@@ -53,13 +54,16 @@ class StarCityBot(commands.Bot):
         self.synced = False
         self.db: aiosqlite.Connection = None
         self.session_id = None
+        self.failed_cogs = []
 
     async def setup_db(self):
         """connecting to sqlite database and creating tables if they don't exist"""
         self.db = await aiosqlite.connect(DB_NAME)
         async with self.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            await cursor.execute("SELECT (id, pid) FROM sessions WHERE id = max(SELECT id FROM sessions)")
+            await cursor.execute("SELECT max(session_id) FROM sessions")
+            session_id = await cursor.fetchone()
+            await cursor.execute("SELECT session_id, pid FROM sessions WHERE session_id = ?", (session_id[0], ))
             pid = await cursor.fetchone()
             _id, pid = pid
             os.system(f"kill {pid}")  # killing previous session
@@ -77,7 +81,7 @@ class StarCityBot(commands.Bot):
                 await self.load_extension(extension)
             except Exception as e:
                 logger.exception(f'Failed to load extension {extension}')
-                await self.log_to_channel(f'Failed to load extension {extension}')
+                self.failed_cogs.append(extension)
 
         # syncs slash commands
         if not self.synced:
@@ -87,6 +91,8 @@ class StarCityBot(commands.Bot):
 
     async def on_ready(self):
         logger.info(f"Started running as {self.user}")
+        for each in self.failed_cogs:
+            await self.log_to_channel(f"Failed to load cog {each}")
         await self.log_to_channel(f"Started running as {self.user}")
 
     async def get_prefix(self, message: discord.Message):
