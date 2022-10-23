@@ -66,7 +66,8 @@ class StarCityBot(commands.Bot):
             await cursor.execute("SELECT session_id, pid FROM sessions WHERE session_id = ?", (session_id[0], ))
             pid = await cursor.fetchone()
             _id, pid = pid
-            os.system(f"kill {pid}")  # killing previous session
+            if _id > 0 and pid is not None:
+                os.system(f"kill {pid}")  # killing previous session
             await cursor.execute("INSERT INTO sessions VALUES (?, ?, ?, ?)",
                                  (_id + 1, os.getpid(), discord.utils.utcnow(), None))
         await self.db.commit()
