@@ -122,7 +122,7 @@ class Currency(commands.Cog):
     async def daily_loop(self):
         await self.daily_reset()
 
-    # daily reset task
+    # daily reset function
     async def daily_reset(self):
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
