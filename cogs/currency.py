@@ -64,7 +64,8 @@ class Currency(commands.Cog):
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (amount, sender_id))
-            await cursor.execute("UPDATE users SET wallet = wallet + ? WHERE user_id = ?", (amount - (amount * tax), receiver_id))
+            await cursor.execute("UPDATE users SET wallet = wallet + ? WHERE user_id = ?",
+                                 (int(amount - (amount * tax)), receiver_id))
             await self.bot.db.commit()
             if tax > 0:
                 await cursor.execute("UPDATE users SET wallet = wallet + ? WHERE user_id = ?", (int(amount * tax), CENTRAL_BANK_ID))
