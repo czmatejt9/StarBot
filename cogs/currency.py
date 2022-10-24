@@ -178,7 +178,7 @@ class Currency(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, guess: int, amount: int):
+    async def gamble(self, ctx: commands.Context, guess: int, amount):
         """Gamble your money against StarBot! Guess which number will be rolled on a 6-sided dice,
          StarBot also takes a guess, if yours is closer you win"""
         wallet, bank = await self.get_balance(ctx.author.id)
