@@ -76,6 +76,14 @@ class Meta(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
+    @commands.command(hidden=True)
+    async def run_sql(self, ctx: commands.Context, *, sql: str):
+        """Runs a sql command"""
+        async with self.bot.db.cursor() as cursor:
+            await cursor.execute(sql)
+            result = await cursor.fetchall()
+        await ctx.send(result)
+
 
 async def setup(bot: StarCityBot):
     await bot.add_cog(Meta(bot))
