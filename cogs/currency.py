@@ -111,9 +111,10 @@ class Currency(commands.Cog):
         except ValueError as e:
             raise commands.BadArgument("Invalid amount.") from e
 
-    @tasks.loop(time=datetime.utcnow() + timedelta(seconds=30))
+    @tasks.loop(time=(datetime.utcnow() + timedelta(seconds=30)).time(), count=1)
     async def daily_loop_starter(self):
         await self.bot.wait_until_ready()
+        await self.bot.log_to_channel("Daily loop started.")
         self.daily_loop.start()
 
     @tasks.loop(hours=24)
