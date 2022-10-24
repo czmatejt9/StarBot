@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Union
 import discord
 from discord.ext import commands, tasks
@@ -8,6 +9,8 @@ from bot import MY_GUILD_ID, StarCityBot
 
 CURRENCY_EMOTE = "💰"  # emoji for currency TODO change to custom emoji
 TAX = 0.05  # tax for sending money to another user (5%)
+DAILY_REWARD = 1000  # daily reward for using daily command
+DAILY_STREAK_BONUS = 200  # bonus for daily reward if user has a streak
 CENTRAL_BANK_ID = 1
 # TODO add cooldown for commands
 
@@ -25,7 +28,8 @@ class Currency(commands.Cog):
         display_name = str(user)
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            await cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)", (user_id, display_name, 0, 0, 0, 0))
+            await cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                                 (user_id, display_name, 0, 0, 0, 0, 0, 0))
             await self.bot.db.commit()
 
     async def ensure_user_exists(self, user_id: int):
@@ -58,6 +62,7 @@ class Currency(commands.Cog):
             await cursor.execute("UPDATE users SET wallet = wallet - ?, bank = bank + ? WHERE user_id = ?", (amount, amount, user_id))
             await self.bot.db.commit()
 
+    # used for every money interaction
     async def transfer_money(self, sender_id: int, receiver_id: int, amount: int, tax: float, description: str) -> int:
         await self.ensure_user_exists(sender_id)
         await self.ensure_user_exists(receiver_id)
@@ -87,6 +92,30 @@ class Currency(commands.Cog):
             await cursor.execute("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?)",
                                  (await self.get_transaction_id(), discord.utils.utcnow(), description,
                                   sender_id, receiver_id, amount, f"{tax * 100}%"))
+            await self.bot.db.commit()
+
+    async def get_transaction_log(self, user_id: int) -> list:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT * FROM transactions WHERE sender_id = ? OR receiver_id = ?", (user_id, user_id))
+            transactions = await cursor.fetchall()
+        return list(transactions)
+
+    def parse_amount(self, amount: str, wallet: int) -> int:
+        if amount == "all":
+            return wallet
+        try:
+            return int(amount)
+        except ValueError as e:
+            raise commands.BadArgument("Invalid amount.") from e
+
+    # daily reset task
+    @tasks.loop(hours=24)
+    async def daily_reset(self):
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("UPDATE users SET daily_streak = 0 WHERE daily_today = 0")
+            await cursor.execute("UPDATE users SET daily_today = 0")
             await self.bot.db.commit()
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
@@ -237,6 +266,33 @@ class Currency(commands.Cog):
                 user = await self.bot.fetch_user(user_id)
             embed.add_field(name=f"{i + 1}. {user}", value=f"{balance}{CURRENCY_EMOTE}", inline=False)
         await ctx.reply(embed=embed)
+
+    @commands.hybrid_command(name="daily")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def daily(self, ctx: commands.Context):
+        """Get your daily reward"""
+        await self.ensure_user_exists(ctx.author.id)
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT daily_streak, daily_today FROM users WHERE user_id = ?", (ctx.author.id,))
+            row = await cursor.fetchone()
+            daily_streak, daily_today = row
+            if bool(daily_today):
+                timestamp = datetime.strptime("00:00", "%H:%M") - discord.utils.utcnow()
+                timestamp = datetime.fromtimestamp(timestamp.total_seconds())
+                embed = discord.Embed(title="You already claimed your daily reward today!",
+                                      description="Come back at", timestamp=timestamp, color=discord.Color.red())
+                embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+                return await ctx.reply(embed=embed)
+            await cursor.execute("UPDATE users SET daily_today = 1, daily_streak = daily_streak + 1"
+                                 " WHERE user_id = ?", (ctx.author.id,))
+            await self.bot.db.commit()
+            await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS,
+                                      0, "daily reward")
+            embed = discord.Embed(title="Daily reward", color=discord.Color.gold(),
+                                  description=f"You got {DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS}{CURRENCY_EMOTE}!")
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+            await ctx.reply(embed=embed)
 
 
 async def setup(bot):
