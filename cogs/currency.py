@@ -111,7 +111,9 @@ class Currency(commands.Cog):
         except ValueError as e:
             raise commands.BadArgument("Invalid amount.") from e
 
-    @tasks.loop(time=(datetime.utcnow() + timedelta(seconds=30)).time(), count=1)
+# #############################################TASKS#########################################################
+    @tasks.loop(time=(datetime.utcnow().replace(hour=23, minute=59, second=59, microsecond=0)
+                      + timedelta(seconds=1)).time(), count=1)
     async def daily_loop_starter(self):
         await self.bot.wait_until_ready()
         await self.bot.log_to_channel("Daily loop started.")
@@ -129,6 +131,7 @@ class Currency(commands.Cog):
             await cursor.execute("UPDATE users SET daily_today = 0")
             await self.bot.db.commit()
             await self.bot.log_to_channel("Daily reset.")
+# #############################################TASKS#########################################################
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
