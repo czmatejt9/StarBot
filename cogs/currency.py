@@ -19,6 +19,7 @@ CENTRAL_BANK_ID = 1
 class Currency(commands.Cog):
     def __init__(self, bot):
         self.bot: StarCityBot = bot
+        self.daily_loop_starter.start()
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         await self.add_xp(ctx.author.id, random.randint(3, 5))
@@ -110,14 +111,23 @@ class Currency(commands.Cog):
         except ValueError as e:
             raise commands.BadArgument("Invalid amount.") from e
 
-    # daily reset task
+    @tasks.loop(time=datetime.utcnow() + timedelta(seconds=30))
+    async def daily_loop_starter(self):
+        await self.bot.wait_until_ready()
+        self.daily_loop.start()
+
     @tasks.loop(hours=24)
+    async def daily_loop(self):
+        await self.daily_reset()
+
+    # daily reset task
     async def daily_reset(self):
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("UPDATE users SET daily_streak = 0 WHERE daily_today = 0")
             await cursor.execute("UPDATE users SET daily_today = 0")
             await self.bot.db.commit()
+            await self.bot.log_to_channel("Daily reset.")
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
