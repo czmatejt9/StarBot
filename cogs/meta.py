@@ -76,7 +76,7 @@ class Meta(commands.Cog):
         new_ctx = await self.bot.get_context(msg, cls=type(ctx))
         await self.bot.invoke(new_ctx)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, name="sql")
     async def run_sql(self, ctx: commands.Context, *, sql: str):
         """Runs a sql command"""
         async with self.bot.db.cursor() as cursor:
