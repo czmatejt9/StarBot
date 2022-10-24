@@ -116,7 +116,6 @@ class Currency(commands.Cog):
                       + timedelta(seconds=1)).time(), count=1)
     async def daily_loop_starter(self):
         await self.bot.wait_until_ready()
-        await self.bot.log_to_channel("Daily loop started.")
         self.daily_loop.start()
 
     @tasks.loop(hours=24)
