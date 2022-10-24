@@ -53,6 +53,7 @@ class StarCityBot(commands.Bot):
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
         self.db: aiosqlite.Connection = None
+        self.id = 1027970017897218048
         self.session_id = None
         self.failed_cogs = []
 
