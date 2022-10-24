@@ -279,7 +279,7 @@ class Currency(commands.Cog):
             row = await cursor.fetchone()
             daily_streak, daily_today = row
             if bool(daily_today):
-                timestamp = datetime.strptime("00:00", "%H:%M") - datetime.now(pytz.timezone("UTC"))
+                timestamp = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - datetime.utcnow()
                 timestamp = datetime.fromtimestamp(timestamp.total_seconds())
                 embed = discord.Embed(title="You already claimed your daily reward today!",
                                       description="Come back at", timestamp=timestamp, color=discord.Color.red())
