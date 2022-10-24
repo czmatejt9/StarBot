@@ -43,7 +43,7 @@ class Currency(commands.Cog):
             await cursor.execute("UPDATE users SET xp = xp + ? WHERE user_id = ?", (amount, user_id))
             await self.bot.db.commit()
 
-    async def get_balance(self, user_id: int) -> tuple[int, int]:
+    async def get_balance(self, user_id: int) -> tuple:
         await self.ensure_user_exists(user_id)
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
