@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Union
 import discord
+import pytz
 from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
@@ -278,19 +279,21 @@ class Currency(commands.Cog):
             row = await cursor.fetchone()
             daily_streak, daily_today = row
             if bool(daily_today):
-                timestamp = datetime.strptime("00:00", "%H:%M") - discord.utils.utcnow()
+                timestamp = datetime.strptime("00:00", "%H:%M") - datetime.now(pytz.timezone("UTC"))
                 timestamp = datetime.fromtimestamp(timestamp.total_seconds())
                 embed = discord.Embed(title="You already claimed your daily reward today!",
                                       description="Come back at", timestamp=timestamp, color=discord.Color.red())
                 embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
                 return await ctx.reply(embed=embed)
+
             await cursor.execute("UPDATE users SET daily_today = 1, daily_streak = daily_streak + 1"
                                  " WHERE user_id = ?", (ctx.author.id,))
             await self.bot.db.commit()
             await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS,
                                       0, "daily reward")
             embed = discord.Embed(title="Daily reward", color=discord.Color.gold(),
-                                  description=f"You got {DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS}{CURRENCY_EMOTE}!")
+                                  description=f"You got {DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS}{CURRENCY_EMOTE}!"
+                                              f"\nYour daily streak is now {daily_streak + 1}!")
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
             await ctx.reply(embed=embed)
 
