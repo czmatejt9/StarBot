@@ -33,7 +33,8 @@ async def main():
     #await cursor.execute("INSERT INTO items VALUES (?, ?, ?, ?, ?)", (0, "apple", 100, 70, "a delicious apple"))
     #await cursor.execute("INSERT INTO items VALUES (?, ?, ?, ?, ?)", (1, "Spjáťa's bulletproof vest", 1_000_000,
     #                                                                  None, "protects you from bullets (and robbers)"))
-    #await cursor.execute("INSERT INTO items VALUES (?, ?, ?, ?, ?)", (2, "lotto ticket", 500, None, "a lotto ticket"))
+    #await cursor.execute("INSERT INTO items VALUES (?, ?, ?, ?, ?)", (2, "lotto ticket", 500, None,
+    #                                                                  "buy to enter the lottery, win big every midnight(utc)"))
 
     await conn.commit()
     await conn.close()
