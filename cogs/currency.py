@@ -149,9 +149,9 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="deposit", aliases=["dep"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
-    @commands.cooldown(2, 86400, commands.BucketType.user)
+    @commands.cooldown(10, 86400, commands.BucketType.user)
     async def deposit(self, ctx: commands.Context, amount):
-        """Deposit money into your bank (2 uses per day)"""
+        """Deposit money into your bank (10 uses per day)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet
@@ -170,9 +170,9 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="withdraw", aliases=["with"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
-    @commands.cooldown(2, 86400, commands.BucketType.user)
+    @commands.cooldown(10, 86400, commands.BucketType.user)
     async def withdraw(self, ctx: commands.Context, amount):
-        """Withdraw money from your bank (2 uses per day)"""
+        """Withdraw money from your bank (10 uses per day)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet
