@@ -133,7 +133,7 @@ class StarCityBot(commands.Bot):
 
     async def log_to_channel(self, msg: str):
         """sends log info directly to discord channel"""
-        channel = self.get_channel(LOG_CHANNEL_ID)
+        channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
         embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
 
