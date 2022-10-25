@@ -186,7 +186,7 @@ class Currency(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
     @commands.cooldown(10, 86400, commands.BucketType.user)
-    async def deposit(self, ctx: commands.Context, amount):
+    async def deposit(self, ctx: commands.Context, amount: str):
         """Deposit money into your bank (10 uses per day)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if not (amount := self.parse_amount(amount, wallet)):
@@ -202,7 +202,7 @@ class Currency(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
     @commands.cooldown(10, 86400, commands.BucketType.user)
-    async def withdraw(self, ctx: commands.Context, amount):
+    async def withdraw(self, ctx: commands.Context, amount: str):
         """Withdraw money from your bank (10 uses per day)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
@@ -222,7 +222,7 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="send")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(member="user to send money to", amount="normal number or 'all'")
-    async def send(self, ctx: commands.Context, member: discord.Member, amount):
+    async def send(self, ctx: commands.Context, member: discord.Member, amount: str):
         """Send money to another user (there is a 5% tax)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
@@ -371,8 +371,9 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="gamble")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
+    @app_commands.choices(guess=[discord.app_commands.Choice(name=str(i), value=i) for i in range(1, 7)])
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, guess: int, amount):
+    async def gamble(self, ctx: commands.Context, guess: discord.app_commands.Choice[int], amount: str):
         """Gamble your money against StarBot! Guess which number will be rolled on a 6-sided dice,
          StarBot also takes a guess, if yours is closer you win"""
         wallet, bank = await self.get_balance(ctx.author.id)
@@ -385,11 +386,10 @@ class Currency(commands.Cog):
                 return await ctx.reply("Amount must be a number or 'all'!")
         if amount <= 0:
             return await ctx.reply("Amount must be positive!")
-        if guess < 1 or guess > 6:
-            return await ctx.reply("Guess must be between 1 and 6!")
         if amount > wallet:
             return await ctx.reply("You don't have that much money!")
 
+        guess = guess.value
         dice = random.randint(1, 6)
         starbot_guess = random.randint(1, 6)
         if abs(guess - dice) < abs(starbot_guess - dice):
@@ -424,11 +424,13 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="buy")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(item="item to buy", amount="number of items to buy, default is 1")
-    async def buy(self, ctx: commands.Context, amount: Optional[int], *, item: str):
+    @app_commands.choices(item=[discord.app_commands.Choice(name=name, value=_id)
+                                for _id, name, _, _, _ in await get_all_items()])
+    async def buy(self, ctx: commands.Context, amount: Optional[int], *, item: discord.app_commands.Choice[int]):
         """Buy an item from the shop"""
         if amount is None:
             amount = 1
-        msg = await self.buy_item(ctx.author.id, item, amount)
+        msg = await self.buy_item(ctx.author.id, item.name, amount)
         embed = discord.Embed(title="Shop", color=discord.Color.green() if "bought" in msg else discord.Color.red(),
                               description=msg)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
