@@ -148,7 +148,7 @@ class Currency(commands.Cog):
 
     @commands.hybrid_command(name="beg")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def beg(self, ctx: commands.Context):
         """Beg for money"""
         wallet, bank = await self.get_balance(ctx.author.id)
@@ -230,7 +230,7 @@ class Currency(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(member="user to send money to", amount="normal number or 'all'")
     async def send(self, ctx: commands.Context, member: discord.Member, amount):
-        """Send money to another user"""
+        """Send money to another user (there is a 5% tax)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet
