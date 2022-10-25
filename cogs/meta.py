@@ -35,7 +35,7 @@ class Meta(commands.Cog):
     @commands.command(hidden=True)
     async def shutdown(self, ctx: commands.Context):
         """shuts down the bot"""
-        self.turn_off("shutdown")
+        await self.turn_off("shutdown")
 
     @commands.command(hidden=True)
     async def update(self, ctx: commands.Context):
@@ -43,7 +43,7 @@ class Meta(commands.Cog):
         os.system("git pull origin master")
         await asyncio.sleep(5)
         os.system(f"nohup python3 -u {file_location} &>> activity.log &")
-        self.turn_off("update")
+        await self.turn_off("update")
 
     @commands.command(hidden=True)
     async def eval(self, ctx: commands.Context, *, msg: str):
