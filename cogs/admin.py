@@ -133,6 +133,11 @@ class Admin(commands.Cog):
         for guild in self.bot.guilds:
             await guild.system_channel.send(msg)
 
+    @commands.command(hidden=True, name="msg")
+    async def send_msg(self, ctx: commands.Context, channel: discord.TextChannel, *, msg: str):
+        """Sends a message to a specific channel"""
+        await channel.send(msg)
+
 
 def insert_returns(body):
     # insert return stmt if the last expression is a expression statement
