@@ -66,7 +66,7 @@ class General(commands.Cog):
         """Sends ephemeral message"""
         await ctx.send("Shh! Only you can see this", ephemeral=True)
 
-    @commands.hybrid_command(name="tip")
+    @commands.hybrid_command(name="smurf")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def tip(self, ctx: commands.Context):
         """Sends daily tip"""
