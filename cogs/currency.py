@@ -13,6 +13,7 @@ TAX = 0.05  # tax for sending money to another user (5%)
 DAILY_REWARD = 1000  # daily reward for using daily command
 DAILY_STREAK_BONUS = 200  # bonus for daily reward if user has a streak
 CENTRAL_BANK_ID = 1
+LOTTO_BANK_ID = 2
 # TODO add cooldown for commands
 
 
@@ -139,7 +140,8 @@ class Currency(commands.Cog):
             wallet = wallet[0]
             if wallet < price * amount:
                 return "You don't have enough money"
-            await self.transfer_money(user_id, CENTRAL_BANK_ID, price * amount, 0, "item purchase")
+            await self.transfer_money(user_id, CENTRAL_BANK_ID if item!="lotto ticket" else LOTTO_BANK_ID,
+                                      price * amount, 0, "item purchase")
             await cursor.execute("INSERT INTO user_items VALUES (?, ?, ?)", (user_id, item_id, amount))
             await self.bot.db.commit()
         return f"You bought {amount} {item} for {price * amount}{CURRENCY_EMOTE}"
@@ -406,6 +408,8 @@ class Currency(commands.Cog):
                                               f"The dice rolled {dice}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
+
+    # TODO inventory commands
 
     @commands.hybrid_command(name="shop")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
