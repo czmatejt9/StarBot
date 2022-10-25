@@ -59,6 +59,12 @@ class Meta(commands.Cog):
         file = discord.File(f"{HOME_PATH}/StarBot.log{number}")
         await ctx.send(file=file)
 
+    @commands.command(hidden=True, name="file")
+    async def get_file(self, ctx: commands.Context, file_name: str):
+        """sends a file directly to discord"""
+        file = discord.File(f"{HOME_PATH}/{file_name}")
+        await ctx.send(file=file)
+
     @commands.command(hidden=True, name="info")
     async def write_log(self, ctx: commands.Context, *, msg: str):
         """writes info to log file"""
