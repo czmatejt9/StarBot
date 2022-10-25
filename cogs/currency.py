@@ -299,7 +299,24 @@ class Currency(commands.Cog):
     @app_commands.describe(member="user to rob")
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def rob(self, ctx: commands.Context, member: discord.Member):
-        pass
+        """Rob a user"""
+        if member.bot:
+            return await ctx.reply("You can't rob bots!")
+        if member.id == ctx.author.id:
+            return await ctx.reply("You can't rob yourself!")
+        victim_wallet, victim_bank = await self.get_balance(member.id)
+        if victim_wallet < 100:
+            return await ctx.reply("This user doesn't have enough money to rob!")
+
+        if random.randint(1, 100) <= 70:
+            money = random.randint(10, 100)
+            await self.transfer_money(ctx.author.id, member.id, money, 0, "failed robbery")
+            msg = f"You got caught and had to pay {money}{CURRENCY_EMOTE} to {member.mention}!"
+        else:
+            money = random.choice(tuple((i * 10 for _ in range(11-i)) for i in range(1, 11)))
+            money = int(victim_wallet * money / 100)
+            await self.transfer_money(member.id, ctx.author.id, money, 0, "successful robbery")
+            msg = f"You stole {money}{CURRENCY_EMOTE} from {member.mention}!"
 
     @commands.hybrid_command(name="gamble")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
