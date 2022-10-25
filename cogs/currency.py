@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import Union
 import discord
-from typing import Optional
+from typing import Optional, Literal
 from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
 import random
-from bot import MY_GUILD_ID, StarCityBot
+from bot import MY_GUILD_ID, StarCityBot, ITEMS
+ITEMS: Enum
 
 CURRENCY_EMOTE = "💰"  # emoji for currency TODO change to custom emoji
 TAX = 0.05  # tax for sending money to another user (5%)
@@ -14,13 +16,14 @@ DAILY_REWARD = 1000  # daily reward for using daily command
 DAILY_STREAK_BONUS = 200  # bonus for daily reward if user has a streak
 CENTRAL_BANK_ID = 1
 LOTTO_BANK_ID = 2
-# TODO add cooldown for commands
 
 
 class Currency(commands.Cog):
     def __init__(self, bot):
         self.bot: StarCityBot = bot
         self.daily_loop_starter.start()
+        self.set_items = False
+
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         await self.add_xp(ctx.author.id, random.randint(3, 5))
@@ -119,11 +122,13 @@ class Currency(commands.Cog):
             item_id = await cursor.fetchone()
         return item_id[0] if item_id is not None else False
 
-    async def get_all_items(self) -> list:
+    async def get_all_items(self, async_itter=False) -> list:
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("SELECT * FROM items")
             items = await cursor.fetchall()
+            if async_itter:
+                return items
         return list(items)
 
     async def buy_item(self, user_id: int, item: str, amount: int):
@@ -371,9 +376,8 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="gamble")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
-    @app_commands.choices(guess=[discord.app_commands.Choice(name=str(i), value=i) for i in range(1, 7)])
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, guess: discord.app_commands.Choice[int], amount: str):
+    async def gamble(self, ctx: commands.Context, guess: Literal[1, 2, 3, 4, 5, 6], amount: str):
         """Gamble your money against StarBot! Guess which number will be rolled on a 6-sided dice,
          StarBot also takes a guess, if yours is closer you win"""
         wallet, bank = await self.get_balance(ctx.author.id)
@@ -389,7 +393,6 @@ class Currency(commands.Cog):
         if amount > wallet:
             return await ctx.reply("You don't have that much money!")
 
-        guess = guess.value
         dice = random.randint(1, 6)
         starbot_guess = random.randint(1, 6)
         if abs(guess - dice) < abs(starbot_guess - dice):
@@ -424,9 +427,8 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="buy")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(item="item to buy", amount="number of items to buy, default is 1")
-    @app_commands.choices(item=[discord.app_commands.Choice(name=name, value=_id)
-                                for _id, name, _, _, _ in await get_all_items()])
-    async def buy(self, ctx: commands.Context, amount: Optional[int], *, item: discord.app_commands.Choice[int]):
+    async def buy(self, ctx: commands.Context, amount: Optional[int], *,
+                  item: Literal[ITEMS]):
         """Buy an item from the shop"""
         if amount is None:
             amount = 1
