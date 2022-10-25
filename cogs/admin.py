@@ -127,6 +127,12 @@ class Admin(commands.Cog):
             result = await cursor.fetchall()
         await ctx.send(result)
 
+    @commands.command(hidden=True, name="broadcast")
+    async def broadcast(self, ctx: commands.Context, *, msg: str):
+        """Sends a message to all guilds the bot is in"""
+        for guild in self.bot.guilds:
+            await guild.system_channel.send(msg)
+
 
 def insert_returns(body):
     # insert return stmt if the last expression is a expression statement
