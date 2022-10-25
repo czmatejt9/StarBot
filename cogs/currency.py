@@ -175,7 +175,7 @@ class Currency(commands.Cog):
         """Withdraw money from your bank (10 uses per day)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
-            amount = wallet
+            amount = bank
         else:
             try:
                 amount = int(amount)
