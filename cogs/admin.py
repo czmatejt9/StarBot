@@ -13,7 +13,7 @@ logger.name = __name__
 file_location = f"{HOME_PATH}/bot.py"
 
 
-class Meta(commands.Cog):
+class Admin(commands.Cog):
     """Some commands for the owner of the bot"""
     def __init__(self, bot):
         self.bot: StarCityBot = bot
@@ -128,9 +128,6 @@ class Meta(commands.Cog):
         await ctx.send(result)
 
 
-async def setup(bot: StarCityBot):
-    await bot.add_cog(Meta(bot))
-
 def insert_returns(body):
     # insert return stmt if the last expression is a expression statement
     if isinstance(body[-1], ast.Expr):
@@ -145,3 +142,7 @@ def insert_returns(body):
     # for with blocks, again we insert returns into the body
     if isinstance(body[-1], ast.With):
         insert_returns(body[-1].body)
+
+
+async def setup(bot: StarCityBot):
+    await bot.add_cog(Admin(bot))
