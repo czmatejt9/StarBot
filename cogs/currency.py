@@ -335,8 +335,11 @@ class Currency(commands.Cog):
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet
-        elif amount is str:
-            return await ctx.reply("Amount must be a number or 'all'!")
+        else:
+            try:
+                amount = int(amount)
+            except ValueError:
+                return await ctx.reply("Amount must be a number or 'all'!")
         if amount <= 0:
             return await ctx.reply("Amount must be positive!")
         if guess < 1 or guess > 6:
