@@ -155,11 +155,11 @@ class Currency(commands.Cog):
         if wallet + bank >= 1000:
             msg = "You already have enough money!"
         else:
-            money = random.randint(1, 100)
+            money = random.randint(10, 100)
             await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, money, 0, "begging")
-            if money < 10:
+            if money < 20:
                 msg = f"Someone gave you {money}{CURRENCY_EMOTE}!"
-            elif money < 50:
+            elif money < 60:
                 msg = f"Someone tripped and {money}{CURRENCY_EMOTE} fell out of their pocket into your hand!"
             else:
                 msg = f"{money}{CURRENCY_EMOTE} fell out of the sky and landed in your pocket!"
