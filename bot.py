@@ -50,7 +50,7 @@ class StarCityBot(commands.Bot):
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
         self.db: aiosqlite.Connection = None
-        self.id = self.user.id
+        self.id = 0
         self.session_id = None
         self.failed_cogs = []
 
@@ -89,6 +89,7 @@ class StarCityBot(commands.Bot):
             self.synced = True
 
     async def on_ready(self):
+        self.id = self.user.id
         logger.info(f"Started running as {self.user}")
         for each in self.failed_cogs:
             await self.log_to_channel(f"Failed to load cog {each}")
