@@ -7,8 +7,7 @@ from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
 import random
-from bot import MY_GUILD_ID, StarCityBot, ITEMS
-ITEMS: Enum
+from bot import MY_GUILD_ID, StarCityBot
 
 CURRENCY_EMOTE = "💰"  # emoji for currency TODO change to custom emoji
 TAX = 0.05  # tax for sending money to another user (5%)
@@ -16,6 +15,7 @@ DAILY_REWARD = 1000  # daily reward for using daily command
 DAILY_STREAK_BONUS = 200  # bonus for daily reward if user has a streak
 CENTRAL_BANK_ID = 1
 LOTTO_BANK_ID = 2
+ITEMS = Literal["apple", "Spjáťa's bulletproof vest", "lotto ticket"]
 
 
 class Currency(commands.Cog):
@@ -23,7 +23,6 @@ class Currency(commands.Cog):
         self.bot: StarCityBot = bot
         self.daily_loop_starter.start()
         self.set_items = False
-
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         await self.add_xp(ctx.author.id, random.randint(3, 5))
@@ -122,13 +121,11 @@ class Currency(commands.Cog):
             item_id = await cursor.fetchone()
         return item_id[0] if item_id is not None else False
 
-    async def get_all_items(self, async_itter=False) -> list:
+    async def get_all_items(self) -> list:
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("SELECT * FROM items")
             items = await cursor.fetchall()
-            if async_itter:
-                return items
         return list(items)
 
     async def buy_item(self, user_id: int, item: str, amount: int):
@@ -428,11 +425,11 @@ class Currency(commands.Cog):
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(item="item to buy", amount="number of items to buy, default is 1")
     async def buy(self, ctx: commands.Context, amount: Optional[int], *,
-                  item: Literal[ITEMS]):
+                  item: ITEMS):
         """Buy an item from the shop"""
         if amount is None:
             amount = 1
-        msg = await self.buy_item(ctx.author.id, item.name, amount)
+        msg = await self.buy_item(ctx.author.id, item, amount)
         embed = discord.Embed(title="Shop", color=discord.Color.green() if "bought" in msg else discord.Color.red(),
                               description=msg)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)

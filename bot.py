@@ -1,8 +1,6 @@
 import logging
 import logging.handlers
 import os
-from enum import Enum
-
 import aiosqlite
 import discord
 from discord.ext import commands
@@ -85,9 +83,6 @@ class StarCityBot(commands.Bot):
             except Exception as e:
                 logger.exception(f'Failed to load extension {extension}')
                 self.failed_cogs.append(extension)
-        # loading items
-        global ITEMS
-        ITEMS = Enum("Items", {name: _id for _id, name, _, _, _ in await self.get_cog("Currency").get_all_items()})
 
         # syncs slash commands
         if not self.synced:
