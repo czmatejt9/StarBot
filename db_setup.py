@@ -11,6 +11,7 @@ async def main():
                          " system_channel_id INTEGER)")
     await cursor.execute("CREATE TABLE IF NOT EXISTS users (user_id INTEGER PRIMARY KEY, display_name TEXT, wallet INTEGER,"
                          "bank INTEGER, xp INTEGER, level INTEGER, daily_streak INTEGER, daily_today INTEGER)")
+    await cursor.execute("DROP TABLE items")
     await cursor.execute("CREATE TABLE IF NOT EXISTS items (item_id INTEGER PRIMARY KEY, name TEXT, price INTEGER,"
                          "sell_price INTEGER, description TEXT)")
     await cursor.execute("CREATE TABLE IF NOT EXISTS user_items (user_id INTEGER, item_id INTEGER, amount INTEGER,"
