@@ -127,7 +127,7 @@ class Currency(commands.Cog):
 
     async def buy_item(self, user_id: int, item: str, amount: int):
         await self.ensure_user_exists(user_id)
-        if not (item_id := await self.get_item_id(item)):
+        if(item_id := await self.get_item_id(item)) is False:
             return "Item not found"
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
