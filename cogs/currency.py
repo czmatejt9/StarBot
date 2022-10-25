@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Union
 import discord
-import pytz
+from typing import Optional
 from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
@@ -110,6 +110,39 @@ class Currency(commands.Cog):
             return int(amount)
         except ValueError as e:
             return False
+
+    async def get_item_id(self, item_name: str) -> int:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT item_id FROM items WHERE name = ?", (item_name,))
+            item_id = await cursor.fetchone()
+        return item_id[0] if item_id is not None else False
+
+    async def get_all_items(self) -> list:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT * FROM items")
+            items = await cursor.fetchall()
+        return list(items)
+
+    async def buy_item(self, user_id: int, item: str, amount: int):
+        await self.ensure_user_exists(user_id)
+        if not (item_id := await self.get_item_id(item)):
+            return "Item not found"
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT price FROM items WHERE item_id = ?", (item_id,))
+            price = await cursor.fetchone()
+            price = price[0]
+            await cursor.execute("SELECT wallet FROM users WHERE user_id = ?", (user_id,))
+            wallet = await cursor.fetchone()
+            wallet = wallet[0]
+            if wallet < price * amount:
+                return "You don't have enough money"
+            await cursor.execute("UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (price * amount, user_id))
+            await cursor.execute("INSERT INTO user_items VALUES (?, ?, ?)", (user_id, item_id, amount))
+            await self.bot.db.commit()
+        return f"You bought {amount} {item} for {price * amount}{CURRENCY_EMOTE}"
 
 # #############################################TASKS#########################################################
     @tasks.loop(time=(datetime.utcnow().replace(hour=23, minute=59, second=59, microsecond=0)
@@ -371,6 +404,29 @@ class Currency(commands.Cog):
             embed = discord.Embed(title="It's a tie!", color=discord.Color.gold(),
                                   description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
                                               f"The dice rolled {dice}")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
+
+    @commands.hybrid_command(name="shop")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def shop(self, ctx: commands.Context):
+        """View the shop"""  # TODO: scrollable embed
+        items = await self.get_all_items()
+        embed = discord.Embed(title="Shop", color=discord.Color.blue())
+        for _id, name, price, sell, description in items:
+            embed.add_field(name=f"**{name}** ({price}{CURRENCY_EMOTE})", value=description, inline=False)
+        await ctx.reply(embed=embed)
+
+    @commands.hybrid_command(name="buy")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    @app_commands.describe(item="item to buy", amount="number of items to buy, default is 1")
+    async def buy(self, ctx: commands.Context, amount: Optional[int], *, item: str):
+        """Buy an item from the shop"""
+        if amount is None:
+            amount = 1
+        msg = await self.buy_item(ctx.author.id, item, amount)
+        embed = discord.Embed(title="Shop", color=discord.Color.green() if "bought" in msg else discord.Color.red(),
+                              description=msg)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
