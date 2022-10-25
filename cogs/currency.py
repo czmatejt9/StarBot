@@ -165,6 +165,27 @@ class Currency(commands.Cog):
                 msg = f"{money}{CURRENCY_EMOTE} fell out of the sky and landed in your pocket!"
         await ctx.reply(msg)
 
+    @commands.hybrid_command(name="crime")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def crime(self, ctx: commands.Context):
+        """Commit a crime"""
+        if random.randint(1, 100) <= 20:
+            money = random.randint(10, 100)
+            await self.transfer_money(ctx.author.id, CENTRAL_BANK_ID, money, 0, "failed crime")
+            msg = f"You got caught and had to pay {money}{CURRENCY_EMOTE} to the police!"
+        else:
+            money = random.randint(50, 500)
+            await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, money, 0, "successful crime")
+            # custom messages based on how much money you get
+            if money < 150:
+                msg = f"You stole {money}{CURRENCY_EMOTE}!"
+            elif money < 350:
+                msg = f"You stole {money}{CURRENCY_EMOTE} from a rich person!"
+            else:
+                msg = f"You stole {money}{CURRENCY_EMOTE} from a bank!"
+        await ctx.reply(msg)
+
     @commands.hybrid_command(name="deposit", aliases=["dep"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
@@ -227,7 +248,7 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="gamble")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def gamble(self, ctx: commands.Context, guess: int, amount):
         """Gamble your money against StarBot! Guess which number will be rolled on a 6-sided dice,
          StarBot also takes a guess, if yours is closer you win"""
