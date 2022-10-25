@@ -139,7 +139,7 @@ class Currency(commands.Cog):
             wallet = wallet[0]
             if wallet < price * amount:
                 return "You don't have enough money"
-            await cursor.execute("UPDATE users SET wallet = wallet - ? WHERE user_id = ?", (price * amount, user_id))
+            await self.transfer_money(user_id, CENTRAL_BANK_ID, price * amount, 0, "item purchase")
             await cursor.execute("INSERT INTO user_items VALUES (?, ?, ?)", (user_id, item_id, amount))
             await self.bot.db.commit()
         return f"You bought {amount} {item} for {price * amount}{CURRENCY_EMOTE}"
