@@ -4,9 +4,8 @@ testing_file2.py
 images
 .idea
 discord_bot
-__pycache__
 variables.env
 bot.db
 database.db
-cogs/__pycache__
 StarBot.log
+**/__pycache__

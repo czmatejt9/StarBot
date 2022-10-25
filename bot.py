@@ -1,12 +1,10 @@
 import logging
 import logging.handlers
-import time
 import os
 import aiosqlite
 import discord
 from discord.ext import commands
 import config
-
 
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
@@ -37,7 +35,6 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name:<15}: {message
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-
 class StarCityBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents(
@@ -53,7 +50,7 @@ class StarCityBot(commands.Bot):
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
         self.db: aiosqlite.Connection = None
-        self.id = 1027970017897218048
+        self.id = self.user.id
         self.session_id = None
         self.failed_cogs = []
 
@@ -136,12 +133,11 @@ class StarCityBot(commands.Bot):
 
     async def log_to_channel(self, msg: str):
         """sends log info directly to discord channel"""
-        channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
+        channel = self.get_channel(LOG_CHANNEL_ID)
         embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
 
 
 mybot = StarCityBot()
 if __name__ == "__main__":
-    time.sleep(5)  # to ensure the bot starts after shutting down previous instance (update command)
     mybot.run(TOKEN, log_handler=None)
