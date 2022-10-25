@@ -160,9 +160,9 @@ class Currency(commands.Cog):
             if money < 10:
                 msg = f"Someone gave you {money}{CURRENCY_EMOTE}!"
             elif money < 50:
-                msg = f"Someone gave you {money}{CURRENCY_EMOTE}! That's a lot!"
+                msg = f"Someone tripped and {money}{CURRENCY_EMOTE} fell out of their pocket into your hand!"
             else:
-                msg = f"Someone gave you {money}{CURRENCY_EMOTE}! That's a lot! You're rich now!"
+                msg = f"{money}{CURRENCY_EMOTE} fell out of the sky and landed in your pocket!"
         await ctx.reply(msg)
 
     @commands.hybrid_command(name="deposit", aliases=["dep"])
