@@ -109,7 +109,7 @@ class Currency(commands.Cog):
         try:
             return int(amount)
         except ValueError as e:
-            raise commands.BadArgument("Invalid amount.") from e
+            return False
 
 # #############################################TASKS#########################################################
     @tasks.loop(time=(datetime.utcnow().replace(hour=23, minute=59, second=59, microsecond=0)
@@ -131,6 +131,7 @@ class Currency(commands.Cog):
             await self.bot.db.commit()
             await self.bot.log_to_channel("Daily reset.")
 # #############################################TASKS#########################################################
+# refactor functions to send embeds instead of strings
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
@@ -153,13 +154,8 @@ class Currency(commands.Cog):
     async def deposit(self, ctx: commands.Context, amount):
         """Deposit money into your bank (10 uses per day)"""
         wallet, bank = await self.get_balance(ctx.author.id)
-        if amount == "all":
-            amount = wallet
-        else:
-            try:
-                amount = int(amount)
-            except ValueError:
-                return await ctx.reply("Amount must be a number or 'all'!")
+        if not (amount := self.parse_amount(amount, wallet)):
+            return await ctx.reply("Amount must be a number or 'all'!")
         if amount <= 0:
             return await ctx.reply("Amount must be positive!")
         if amount > wallet:
@@ -207,20 +203,23 @@ class Currency(commands.Cog):
             return await ctx.reply("You don't have that much money!")
 
         taxed_amount = await self.transfer_money(ctx.author.id, member.id, amount, TAX, "user to user transfer")
-        await ctx.reply(
-            f"You sent {taxed_amount}{CURRENCY_EMOTE} to {member.mention}! ({amount - taxed_amount}{CURRENCY_EMOTE} lost to tax)")
+        embed = discord.Embed(title="Money transfer", color=discord.Color.gold(),
+                              description=f"Sent {taxed_amount}{CURRENCY_EMOTE} to {member.mention} "
+                                          f"({amount - taxed_amount}{CURRENCY_EMOTE} lost to tax)")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="leaderboard", aliases=["lb"])
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def leaderboard(self, ctx: commands.Context):
-        """View the leaderboard of the richest users"""
+        """View the leaderboard of top 10 richest users"""
         async with self.bot.db.cursor() as cursor:
             await cursor.execute("SELECT user_id, wallet + bank AS balance FROM users ORDER BY balance DESC LIMIT 10")
             rows = await cursor.fetchall()
         embed = discord.Embed(title="Leaderboard", color=discord.Color.gold())
         for i, row in enumerate(rows):
             user_id, balance = row
-            if user_id in [self.bot.id, 1]:
+            if user_id in [self.bot.id, 1, 2]:
                 continue
 
             user = self.bot.get_user(user_id)
@@ -274,7 +273,9 @@ class Currency(commands.Cog):
                 msg = f"Someone tripped and {money}{CURRENCY_EMOTE} fell out of their pocket into your hand!"
             else:
                 msg = f"{money}{CURRENCY_EMOTE} fell out of the sky and landed in your pocket!"
-        await ctx.reply(msg)
+        embed = discord.Embed(title="Begging", color=discord.Color.green(), description=msg)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="crime")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
@@ -282,7 +283,7 @@ class Currency(commands.Cog):
     async def crime(self, ctx: commands.Context):
         """Commit a crime"""
         if random.randint(1, 100) <= 20:
-            money = random.randint(10, 100)
+            money = random.randint(100, 1000)
             await self.transfer_money(ctx.author.id, CENTRAL_BANK_ID, money, 0, "failed crime")
             msg = f"You got caught and had to pay {money}{CURRENCY_EMOTE} to the police!"
         else:
@@ -295,7 +296,10 @@ class Currency(commands.Cog):
                 msg = f"You stole {money}{CURRENCY_EMOTE} from a rich person!"
             else:
                 msg = f"You stole {money}{CURRENCY_EMOTE} from a bank!"
-        await ctx.reply(msg)
+        embed = discord.Embed(title="Crime", color=discord.Color.red() if "caught" in msg else discord.Color.green(),
+                              description=msg)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="rob")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
@@ -323,7 +327,11 @@ class Currency(commands.Cog):
             money = int(victim_wallet * money / 100)
             await self.transfer_money(member.id, ctx.author.id, money, 0, "successful robbery")
             msg = f"You stole {money}{CURRENCY_EMOTE} from {member.mention}!"
-        await ctx.reply(msg)
+
+        embed = discord.Embed(title="Robbery", color=discord.Color.red() if "caught" in msg else discord.Color.green(),
+                              description=msg)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="gamble")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
@@ -351,12 +359,12 @@ class Currency(commands.Cog):
         starbot_guess = random.randint(1, 6)
         if abs(guess - dice) < abs(starbot_guess - dice):
             await self.transfer_money(self.bot.id, ctx.author.id, amount, 0, "gambling")
-            embed = discord.Embed(title="You won!", color=discord.Color.green(),
+            embed = discord.Embed(title=f"You won {amount}{CURRENCY_EMOTE}!", color=discord.Color.green(),
                                   description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
                                               f"The dice rolled {dice}")
         elif abs(guess - dice) > abs(starbot_guess - dice):
             await self.transfer_money(ctx.author.id, self.bot.id, amount, 0, "gambling")
-            embed = discord.Embed(title="You lost!", color=discord.Color.red(),
+            embed = discord.Embed(title=f"You lost {amount}{CURRENCY_EMOTE}!", color=discord.Color.red(),
                                   description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
                                               f"The dice rolled {dice}")
         else:

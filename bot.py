@@ -17,6 +17,7 @@ EXTENSIONS = (
     "cogs.minigames",
     "cogs.mods",
     "cogs.meta",
+    "cogs.admin",
     "cogs.currency",
 )
 
