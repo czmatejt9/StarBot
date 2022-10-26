@@ -156,12 +156,13 @@ class Currency(commands.Cog):
             cursor: aiosqlite.Cursor
             await cursor.execute("UPDATE lottery SET winner_id = ? WHERE lottery_id = (SELECT max(lottery_id) FROM lottery)",
                                  (last_lotto_winner,))
-            await cursor.execute("INSERT INTO lottery VALUES (?, ?, ?)", (0, datetime.utcnow().strftime("%Y-%m-%d"), 0))
+            await cursor.execute("INSERT INTO lottery VALUES ((SELECT max(lottery_id) FROM lottery) + 1, ?, ?)",
+                                 (0, datetime.utcnow().strftime("%Y-%m-%d"), 0))
 
             await self.bot.db.commit()
 
-    async def bot_buy_lotto_ticket(self):  # bot buys 100 lotto ticket every 24 hours to increase the jackpot
-        await self.buy_item(self.bot.id, "lotto ticket", 100)
+    async def bot_buy_lotto_ticket(self):  # bot buys 1000 lotto ticket every 24 hours to increase the jackpot
+        await self.buy_item(self.bot.id, "lotto ticket", 1000)
 
     async def generate_lotto_numbers(self) -> list:
         seeded_random = random.Random(random.randint(-sys.maxsize, sys.maxsize))
