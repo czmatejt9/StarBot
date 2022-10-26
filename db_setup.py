@@ -28,7 +28,7 @@ async def main():
     #                                                                              "null transaction", 0, 0, 0, 0))
     #await cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (1, "CENTRAL BANK", 0, 0, 0, 0, 0, 0))
     #await cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (2, "LOTTO BANK", 0, 0, 0, 0, 0, 0))
-    #await cursor.execute("INSERT INTO lottery VALUES (?, ?, ?)", (0, datetime.datetime.now().strftime("%Y-%m-%d"), 0))
+    #await cursor.execute("INSERT INTO lottery VALUES (?, ?, ?)", (0, datetime.datetime.utcnow().strftime("%Y-%m-%d"), 0))
     # items
     #await cursor.execute("INSERT INTO items VALUES (?, ?, ?, ?, ?)", (0, "apple", 100, 70, "a delicious apple"))
     #await cursor.execute("INSERT INTO items VALUES (?, ?, ?, ?, ?)", (1, "Spjáťa's bulletproof vest", 1_000_000,

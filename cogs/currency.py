@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Union
@@ -144,10 +145,110 @@ class Currency(commands.Cog):
             if wallet < price * amount:
                 return "You don't have enough money"
             await self.transfer_money(user_id, CENTRAL_BANK_ID if item != "lotto ticket" else LOTTO_BANK_ID,
-                                      price * amount, 0, "item purchase")
+                                      price * amount, 0, f"item purchase ({item})")
             await cursor.execute("INSERT INTO user_items VALUES (?, ?, ?)", (user_id, item_id, amount))
             await self.bot.db.commit()
         return f"You bought {amount} {item} for {price * amount}{CURRENCY_EMOTE}"
+
+    # lotto related functions
+    async def create_new_lotto(self, last_lotto_winner: str):
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("UPDATE lottery SET winner_id = ? WHERE lottery_id = (SELECT max(lottery_id) FROM lottery)",
+                                 (last_lotto_winner,))
+            await cursor.execute("INSERT INTO lottery VALUES (?, ?, ?)", (0, datetime.utcnow().strftime("%Y-%m-%d"), 0))
+
+            await self.bot.db.commit()
+
+    async def bot_buy_lotto_ticket(self):  # bot buys 100 lotto ticket every 24 hours to increase the jackpot
+        await self.buy_item(self.bot.id, "lotto ticket", 100)
+
+    async def generate_lotto_numbers(self) -> list:
+        seeded_random = random.Random(random.randint(-sys.maxsize, sys.maxsize))
+        return seeded_random.sample(range(1, 49), 6)
+
+    async def get_lotto_jackpot(self) -> int:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT bank FROM users WHERE user_id = ?", (LOTTO_BANK_ID,))
+            lotto_bank = await cursor.fetchone()
+            lotto_bank = lotto_bank[0]
+        return int(lotto_bank*(0.50 + await self.get_days_without_winner()/100))
+
+    async def get_days_without_winner(self) -> int:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT * FROM lottery")
+            _all = await cursor.fetchall()
+            days_without_winner = 0
+            for _id, time, winner_id in _all:
+                if winner_id is None or winner_id == 0:
+                    days_without_winner += 1
+                else:
+                    days_without_winner = 0
+        return days_without_winner
+
+    async def get_and_remove_all_lotto_tickets(self) -> list:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT * FROM user_items WHERE item_id = ?", (await self.get_item_id("lotto ticket"),))
+            tickets = await cursor.fetchall()
+            await cursor.execute("DELETE FROM user_items WHERE item_id = ?", (await self.get_item_id("lotto ticket"),))
+            await self.bot.db.commit()
+        return list(tickets)
+
+    async def get_tickets_per_user(self, all_tickets: list) -> dict:
+        tickets_per_user = {}
+        for user_id, item_id, amount in all_tickets:
+            if user_id in tickets_per_user:
+                tickets_per_user[user_id] += amount
+            else:
+                tickets_per_user[user_id] = amount
+        return tickets_per_user
+
+    async def evaluate_lotto_ticket(self, ticket: list, winning_numbers: list) -> int:
+        return sum(number in winning_numbers for number in ticket)
+
+    async def get_lotto_winners(self, tickets_per_user: dict, winning_numbers: list) -> list:
+        winners = []
+        for user_id, amount in tickets_per_user.items():
+            for _ in range(amount):
+                ticket = await self.generate_lotto_numbers()
+                if await (correct := self.evaluate_lotto_ticket(ticket, winning_numbers)) >= 3:
+                    winners.append((user_id, correct))
+        return winners
+
+    async def sent_dm_to_winner(self, winner_id: int, amount: int, msg: str):
+        try:
+            user = await self.bot.fetch_user(winner_id)
+            if user.dm_channel is None:
+                await user.create_dm()
+            await user.send(f"You won {amount}{CURRENCY_EMOTE} {msg}!")
+        except discord.Forbidden:
+            pass
+
+    async def pay_prizes(self, winners: list, amount: int) -> list:
+        jackpot = await self.get_lotto_jackpot()
+        percetages = {3: 0.1, 4: 0.25, 5: 0.65}
+        winners_with_prize = []
+        total_people_with_correct = {}
+        for user_id, correct in winners:
+            total_people_with_correct[correct] = total_people_with_correct.get(correct, 0) + 1
+        for user_id, correct in winners:
+            if correct == 6:
+                prize = jackpot // total_people_with_correct[correct]
+                winners_with_prize.append((user_id, prize, correct))
+                await self.move_money_to_bank(LOTTO_BANK_ID, -prize)  # withdraw money from lotto bank to pay jackpot
+                await self.transfer_money(LOTTO_BANK_ID, user_id, prize, 0, "lottery jackpot")
+                await self.sent_dm_to_winner(user_id, prize, "in the lotto. You won the jackpot!")
+            else:
+                prize = int(amount * percetages[correct] // total_people_with_correct[correct])
+                winners_with_prize.append((user_id, prize, correct))
+                await self.transfer_money(LOTTO_BANK_ID, user_id, prize, 0, "lottery prize")
+                await self.sent_dm_to_winner(user_id, prize, f"in the lotto. You had {correct} numbers!")
+
+        winners_with_prize = sorted(winners_with_prize, key=lambda x: x[1], reverse=True)
+        return winners_with_prize
 
 # #############################################TASKS#########################################################
     @tasks.loop(time=(datetime.utcnow().replace(hour=23, minute=59, second=59, microsecond=0)
@@ -159,6 +260,7 @@ class Currency(commands.Cog):
     @tasks.loop(hours=24)
     async def daily_loop(self):
         await self.daily_reset()
+        await self.lotto_reset()
 
     # daily reset function
     async def daily_reset(self):
@@ -168,8 +270,38 @@ class Currency(commands.Cog):
             await cursor.execute("UPDATE users SET daily_today = 0")
             await self.bot.db.commit()
             await self.bot.log_to_channel("Daily reset.")
+
+    async def lotto_reset(self):
+        await self.bot_buy_lotto_ticket()
+        lotto_wallet, lotto_bank = await self.get_balance(LOTTO_BANK_ID)
+        await self.move_money_to_bank(LOTTO_BANK_ID, int(lotto_wallet * 0.31))  # 31% of the lotto wallet is profit
+
+        amount_to_be_paid = lotto_wallet - int(lotto_wallet * 0.31)
+        all_tickets = await self.get_and_remove_all_lotto_tickets()
+        tickets_per_user = await self.get_tickets_per_user(all_tickets)
+        winning_numbers = await self.generate_lotto_numbers()
+        winners = await self.get_lotto_winners(tickets_per_user, winning_numbers)
+
+        prizes: list = await self.pay_prizes(winners, amount_to_be_paid)
+        embed = discord.Embed(title="Lotto results", description=f"Winning numbers: {winning_numbers}", color=0x00ff00,
+                              timestamp=datetime.utcnow())
+        winner = ""
+        for user_id, prize, correct_numbers in prizes:
+            msg = ""
+            if correct_numbers == 6:
+                winner += f"{user_id} "
+                msg = "Jackpot winner!"
+            embed.add_field(name=self.bot.get_user(user_id),
+                            value=f"{prize}{CURRENCY_EMOTE} ({correct_numbers} correct numbers) {msg}", inline=False)
+        await self.bot.log_to_channel("", embed=embed)
+        await self.create_new_lotto(winner)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def test_lotto(self, ctx):
+        await self.lotto_reset()
+
 # #############################################TASKS#########################################################
-# refactor functions to send embeds instead of strings
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
     @app_commands.describe(member="user to check balance of, leave blank to check your own balance")

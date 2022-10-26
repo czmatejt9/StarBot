@@ -135,10 +135,11 @@ class StarCityBot(commands.Bot):
             logger.exception(f"**{ctx.invoked_with}** {error}")
             await self.log_to_channel(f"**{ctx.invoked_with}** {error}")
 
-    async def log_to_channel(self, msg: str):
+    async def log_to_channel(self, msg: str, embed: discord.Embed = None):
         """sends log info directly to discord channel"""
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-        embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
+        if embed is None:
+            embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
 
 
