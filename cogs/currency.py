@@ -301,6 +301,18 @@ class Currency(commands.Cog):
     async def test_lotto(self, ctx):
         await self.lotto_reset()
 
+    @commands.command(hidden=True, name="testdaily")
+    @commands.is_owner()
+    async def test_daily(self, ctx):
+        await self.daily_reset()
+
+    @commands.command(hidden=True, name="transfer_central_to_lotto")
+    @commands.is_owner()
+    async def transfer_central_to_lotto(self, ctx, amount: int):
+        await self.transfer_money(CENTRAL_BANK_ID, LOTTO_BANK_ID, amount, 0, "starting lotto money")
+        await self.move_money_to_bank(LOTTO_BANK_ID, amount)
+        await self.bot.log_to_channel(f"Transferred {amount}{CURRENCY_EMOTE} from central bank to lotto bank.")
+
 # #############################################TASKS#########################################################
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
@@ -550,11 +562,45 @@ class Currency(commands.Cog):
         """Buy an item from the shop"""
         if amount is None:
             amount = 1
+        if amount <= 0:
+            return await ctx.reply("Amount must be positive!")
         msg = await self.buy_item(ctx.author.id, item, amount)
         embed = discord.Embed(title="Shop", color=discord.Color.green() if "bought" in msg else discord.Color.red(),
                               description=msg)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
+
+    # TODO: sell command
+
+    @commands.hybrid_group(name="lotto", invoke_without_command=False, with_app_command=True)
+    async def lotto(self, ctx: commands.Context):
+        """Lotto commands"""
+        pass
+
+    @lotto.command(name="buy")
+    @app_commands.describe(amount="number of tickets to buy, default is 1")
+    async def lotto_buy(self, ctx: commands.Context, amount: Optional[int]):
+        """Buy lotto tickets (same as /buy lotto ticket)"""
+        if amount is None:
+            amount = 1
+        if amount <= 0:
+            return await ctx.reply("Amount must be positive!")
+        msg = await self.buy_item(ctx.author.id, "lotto ticket", amount)
+        embed = discord.Embed(title="Shop", color=discord.Color.green() if "bought" in msg else discord.Color.red(),
+                              description=msg)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
+
+    @lotto.command(name="jackpot")
+    async def lotto_jackpot(self, ctx: commands.Context):
+        """View the lotto jackpot"""
+        jackpot = await self.get_lotto_jackpot()
+        embed = discord.Embed(title="Lotto Jackpot", color=discord.Color.blue(),
+                              description=f"{jackpot}{CURRENCY_EMOTE}")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
+
+    # TODO: lotto winners command
 
 
 async def setup(bot):
