@@ -162,8 +162,8 @@ class Currency(commands.Cog):
 
             await self.bot.db.commit()
 
-    async def bot_buy_lotto_ticket(self):  # bot buys 1000 lotto ticket every 24 hours to increase the jackpot
-        await self.buy_item(self.bot.id, "lotto ticket", 1000, True)
+    async def bot_buy_lotto_ticket(self):  # bot buys 100 lotto ticket every 24 hours to increase the jackpot
+        await self.buy_item(self.bot.id, "lotto ticket", 100, True)
 
     async def generate_lotto_numbers(self) -> list:
         seeded_random = random.Random(random.randint(-sys.maxsize, sys.maxsize))
