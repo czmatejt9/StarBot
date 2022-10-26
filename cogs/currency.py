@@ -130,7 +130,7 @@ class Currency(commands.Cog):
             items = await cursor.fetchall()
         return list(items)
 
-    async def buy_item(self, user_id: int, item: str, amount: int):
+    async def buy_item(self, user_id: int, item: str, amount: int, can_go_negative: bool = False) -> str:
         await self.ensure_user_exists(user_id)
         if(item_id := await self.get_item_id(item)) is False:
             return "Item not found"
@@ -142,7 +142,7 @@ class Currency(commands.Cog):
             await cursor.execute("SELECT wallet FROM users WHERE user_id = ?", (user_id,))
             wallet = await cursor.fetchone()
             wallet = wallet[0]
-            if wallet < price * amount:
+            if wallet < price * amount and not can_go_negative:
                 return "You don't have enough money"
             await self.transfer_money(user_id, CENTRAL_BANK_ID if item != "lotto ticket" else LOTTO_BANK_ID,
                                       price * amount, 0, f"item purchase ({item})")
@@ -162,7 +162,7 @@ class Currency(commands.Cog):
             await self.bot.db.commit()
 
     async def bot_buy_lotto_ticket(self):  # bot buys 1000 lotto ticket every 24 hours to increase the jackpot
-        await self.buy_item(self.bot.id, "lotto ticket", 1000)
+        await self.buy_item(self.bot.id, "lotto ticket", 1000, True)
 
     async def generate_lotto_numbers(self) -> list:
         seeded_random = random.Random(random.randint(-sys.maxsize, sys.maxsize))
