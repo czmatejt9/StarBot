@@ -1,6 +1,5 @@
 import sys
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import Union
 import discord
 from typing import Optional, Literal
@@ -215,7 +214,7 @@ class Currency(commands.Cog):
         for user_id, amount in tickets_per_user.items():
             for _ in range(amount):
                 ticket = await self.generate_lotto_numbers()
-                if await (correct := self.evaluate_lotto_ticket(ticket, winning_numbers)) >= 3:
+                if (correct := await self.evaluate_lotto_ticket(ticket, winning_numbers)) >= 3:
                     winners.append((user_id, correct))
         return winners
 
