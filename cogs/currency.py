@@ -596,7 +596,7 @@ class Currency(commands.Cog):
         """View the lotto jackpot"""
         jackpot = await self.get_lotto_jackpot()
         embed = discord.Embed(title="Current Lotto Jackpot", color=discord.Color.blue(),
-                              description=f"{jackpot}{CURRENCY_EMOTE}")
+                              description=f"{jackpot:' '}{CURRENCY_EMOTE}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
