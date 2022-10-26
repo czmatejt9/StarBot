@@ -7,7 +7,9 @@ from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
 import random
-from bot import MY_GUILD_ID, StarCityBot
+from bot import MY_GUILD_ID, StarCityBot, logger
+
+logger.name = __name__
 
 CURRENCY_EMOTE = "💰"  # emoji for currency TODO change to custom emoji
 TAX = 0.05  # tax for sending money to another user (5%)
@@ -218,14 +220,14 @@ class Currency(commands.Cog):
                     winners.append((user_id, correct))
         return winners
 
-    async def sent_dm_to_winner(self, winner_id: int, amount: int, msg: str):
+    async def send_dm_to_winner(self, winner_id: int, amount: int, msg: str):
         try:
             user = await self.bot.fetch_user(winner_id)
             if user.dm_channel is None:
                 await user.create_dm()
             await user.send(f"You won {amount}{CURRENCY_EMOTE} {msg}!")
-        except discord.Forbidden:
-            pass
+        except discord.Forbidden or discord.HTTPException as e:
+            logger.error(f"Could not send DM to {winner_id} because of {e}")
 
     async def pay_prizes(self, winners: list, amount: int) -> list:
         jackpot = await self.get_lotto_jackpot()
@@ -240,12 +242,12 @@ class Currency(commands.Cog):
                 winners_with_prize.append((user_id, prize, correct))
                 await self.move_money_to_bank(LOTTO_BANK_ID, -prize)  # withdraw money from lotto bank to pay jackpot
                 await self.transfer_money(LOTTO_BANK_ID, user_id, prize, 0, "lottery jackpot")
-                await self.sent_dm_to_winner(user_id, prize, "in the lotto. You won the jackpot!")
+                await self.send_dm_to_winner(user_id, prize, "in the lotto. You won the jackpot!")
             else:
                 prize = int(amount * percetages[correct] // total_people_with_correct[correct])
                 winners_with_prize.append((user_id, prize, correct))
                 await self.transfer_money(LOTTO_BANK_ID, user_id, prize, 0, "lottery prize")
-                await self.sent_dm_to_winner(user_id, prize, f"in the lotto. You had {correct} numbers!")
+                await self.send_dm_to_winner(user_id, prize, f"in the lotto. You had {correct} numbers!")
 
         winners_with_prize = sorted(winners_with_prize, key=lambda x: x[1], reverse=True)
         return winners_with_prize
