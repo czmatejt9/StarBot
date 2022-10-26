@@ -296,7 +296,7 @@ class Currency(commands.Cog):
         await self.bot.log_to_channel("", embed=embed)
         await self.create_new_lotto(winner)
 
-    @commands.command(hidden=True)
+    @commands.command(hidden=True, name="testlotto")
     @commands.is_owner()
     async def test_lotto(self, ctx):
         await self.lotto_reset()
