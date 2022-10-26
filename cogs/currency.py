@@ -226,7 +226,7 @@ class Currency(commands.Cog):
             if user.dm_channel is None:
                 await user.create_dm()
             await user.send(f"You won {amount}{CURRENCY_EMOTE} {msg}!")
-        except discord.Forbidden or discord.HTTPException as e:
+        except Exception as e:
             logger.error(f"Could not send DM to {winner_id} because of {e}")
 
     async def pay_prizes(self, winners: list, amount: int) -> list:
