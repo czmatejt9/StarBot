@@ -1,15 +1,9 @@
-import random
 from datetime import datetime
 import aiosqlite
 import pytz
 import discord
 from discord.ext import commands
-from discord import app_commands
-from bot import StarCityBot, MY_GUILD_ID, mybot, DEFAULT_PREFIX
-
-
-def coinflip():
-    return random.randint(0, 1)
+from bot import StarCityBot, DEFAULT_PREFIX
 
 
 class General(commands.Cog):
@@ -23,22 +17,6 @@ class General(commands.Cog):
         if member.dm_channel is None:
             await member.create_dm()
         await member.dm_channel.send(f"Welcome to {member.guild.name}")
-
-    @mybot.hybrid_group(fallbakck="get", pass_context=True, with_app_command=True)
-    async def random(self, ctx: commands.Context):
-        """Some random generators"""
-        await ctx.send("Use random + name of the subcommand")
-
-    @random.command(name="number")
-    @app_commands.describe(lowest="min value", highest="max value")
-    async def number(self, ctx: commands.Context, lowest: int, highest: int):
-        """Returns an integer between specified values"""
-        await ctx.send(f"The random number from `{lowest} to {highest}` is {random.randint(lowest, highest)}!")
-
-    @random.command(name="float")
-    async def float(self, ctx: commands.Context):
-        """Returns random float between 0 and 1"""
-        await ctx.send(f"The random number between `0 and 1` is {random.uniform(0, 1)}!")
 
     @commands.hybrid_command(name="hi", aliases=["hello"])
     async def hi(self, ctx: commands.Context):
@@ -64,14 +42,6 @@ class General(commands.Cog):
     async def tip(self, ctx: commands.Context):
         """Sends daily tip"""
         await ctx.send("Coming soon!", ephemeral=True)  # TODO
-
-    @commands.hybrid_command(name="coinflip")
-    async def flip_a_coin(self, ctx: commands.Context):
-        """Flips a coin"""
-        if coinflip():
-            await ctx.send("Heads!")
-            return
-        await ctx.send("Tails!")
 
     @commands.hybrid_command(name="time")
     async def time(self, ctx: commands.Context):

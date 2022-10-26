@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from . import tictactoe, gobblet
-from bot import StarCityBot, MY_GUILD_ID, mybot
+from bot import StarCityBot, MY_GUILD_ID
 
 
 class Minigames(commands.Cog):
@@ -10,7 +10,7 @@ class Minigames(commands.Cog):
     def __init__(self, bot):
         self.bot: StarCityBot = bot
 
-    @mybot.hybrid_group(fallbakck="get", pass_context=True, with_app_command=True)
+    @commands.hybrid_group(pass_context=True, with_app_command=True, invoke_without_command=False)
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def game(self, ctx: commands.Context):
         """Some minigames to play with other users"""
