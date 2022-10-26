@@ -17,7 +17,6 @@ class Minigames(commands.Cog):
         await ctx.send("Use game + name of the game + opponent")
 
     @game.command(name="xo", aliases=["tic", "tictactoe"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @commands.guild_only()
     @app_commands.describe(member="The user you wanna play against")
     async def tic_tac_toe(self, ctx: commands.Context, *, member: discord.Member):
@@ -35,7 +34,6 @@ class Minigames(commands.Cog):
         prompt.message = msg
 
     @game.command(name="gobblet", aliases=["gobbletgobblers"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @commands.guild_only()
     @app_commands.describe(member="The user you wanna play against")
     async def gobblet_gobblers(self, ctx: commands.Context, *, member: discord.Member):

@@ -138,14 +138,25 @@ class Admin(commands.Cog):
         """Sends a message to a specific channel"""
         await channel.send(msg)
 
+    @commands.command(hidden=True, name="sync")
+    async def sync(self, ctx: commands.Context, guild_id: Optional[int], global_: bool = False):
+        """Syncs slash commands"""
+        if not global_:
+            guild = ctx.guild if guild_id is None else discord.Object(id=guild_id)
+            cmds = await self.bot.tree.sync(guild=guild)
+        else:
+            cmds = await self.bot.tree.sync()
+
+        await ctx.send(f"Synced {len(cmds)} commands {'globally' if global_ else 'locally'}")
+
 
 def insert_returns(body):
-    # insert return stmt if the last expression is a expression statement
+    # insert return stmt if the last expression is an expression statement
     if isinstance(body[-1], ast.Expr):
         body[-1] = ast.Return(body[-1].value)
         ast.fix_missing_locations(body[-1])
 
-    # for if statements, we insert returns into the body and the orelse
+    # for if statements, we insert returns into the body and the or else
     if isinstance(body[-1], ast.If):
         insert_returns(body[-1].body)
         insert_returns(body[-1].orelse)

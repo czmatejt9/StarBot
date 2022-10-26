@@ -37,6 +37,7 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name:<15}: {message
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
 class StarCityBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents(

@@ -16,6 +16,7 @@ DAILY_STREAK_BONUS = 200  # bonus for daily reward if user has a streak
 CENTRAL_BANK_ID = 1
 LOTTO_BANK_ID = 2
 ITEMS = Literal["apple", "Spjáťa's bulletproof vest", "lotto ticket"]
+# TODO top priority: add lotto drawing every midnight utc
 
 
 class Currency(commands.Cog):
@@ -171,7 +172,6 @@ class Currency(commands.Cog):
 # refactor functions to send embeds instead of strings
 
     @commands.hybrid_command(name="balance", aliases=["bal"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(member="user to check balance of, leave blank to check your own balance")
     async def balance(self, ctx: commands.Context, member: Union[discord.Member, discord.User] = None):
         """Shows your or someone's balance"""
@@ -185,7 +185,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="deposit", aliases=["dep"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
     @commands.cooldown(10, 86400, commands.BucketType.user)
     async def deposit(self, ctx: commands.Context, amount: str):
@@ -201,7 +200,6 @@ class Currency(commands.Cog):
         await ctx.reply(f"Deposited {amount}{CURRENCY_EMOTE} into your bank!")
 
     @commands.hybrid_command(name="withdraw", aliases=["with"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(amount="normal number or 'all'")
     @commands.cooldown(10, 86400, commands.BucketType.user)
     async def withdraw(self, ctx: commands.Context, amount: str):
@@ -222,7 +220,6 @@ class Currency(commands.Cog):
         await ctx.reply(f"Withdrew {amount}{CURRENCY_EMOTE} from your bank!")
 
     @commands.hybrid_command(name="send")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(member="user to send money to", amount="normal number or 'all'")
     async def send(self, ctx: commands.Context, member: discord.Member, amount: str):
         """Send money to another user (there is a 5% tax)"""
@@ -247,7 +244,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="leaderboard", aliases=["lb"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def leaderboard(self, ctx: commands.Context):
         """View the leaderboard of top 10 richest users"""
         async with self.bot.db.cursor() as cursor:
@@ -266,7 +262,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="daily")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def daily(self, ctx: commands.Context):
         """Get your daily reward"""
         await self.ensure_user_exists(ctx.author.id)
@@ -294,7 +289,6 @@ class Currency(commands.Cog):
             await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="beg")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def beg(self, ctx: commands.Context):
         """Beg for money"""
@@ -315,7 +309,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="crime")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def crime(self, ctx: commands.Context):
         """Commit a crime"""
@@ -339,7 +332,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="rob")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(member="user to rob")
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def rob(self, ctx: commands.Context, member: discord.Member):
@@ -371,7 +363,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="gamble")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def gamble(self, ctx: commands.Context, guess: Literal[1, 2, 3, 4, 5, 6], amount: str):
@@ -412,7 +403,6 @@ class Currency(commands.Cog):
     # TODO inventory commands
 
     @commands.hybrid_command(name="shop")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def shop(self, ctx: commands.Context):
         """View the shop"""  # TODO: scrollable embed
         items = await self.get_all_items()
@@ -422,7 +412,6 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="buy")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @app_commands.describe(item="item to buy", amount="number of items to buy, default is 1")
     async def buy(self, ctx: commands.Context, amount: Optional[int], *,
                   item: ITEMS):
