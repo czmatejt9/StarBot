@@ -157,7 +157,7 @@ class Currency(commands.Cog):
             await cursor.execute("UPDATE lottery SET winner_id = ? WHERE lottery_id = (SELECT max(lottery_id) FROM lottery)",
                                  (last_lotto_winner,))
             await cursor.execute("INSERT INTO lottery VALUES ((SELECT max(lottery_id) FROM lottery) + 1, ?, ?)",
-                                 (0, datetime.utcnow().strftime("%Y-%m-%d"), 0))
+                                 (datetime.utcnow().strftime("%Y-%m-%d"), 0))
 
             await self.bot.db.commit()
 
