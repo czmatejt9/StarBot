@@ -426,13 +426,14 @@ class Currency(commands.Cog):
             await cursor.execute("UPDATE users SET daily_today = 1, daily_streak = daily_streak + 1"
                                  " WHERE user_id = ?", (ctx.author.id,))
             await self.bot.db.commit()
-            await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS,
-                                      0, "daily reward")
-            embed = discord.Embed(title="Daily reward", color=discord.Color.gold(),
-                                  description=f"You got {DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS}{CURRENCY_EMOTE}!"
-                                              f"\nYour daily streak is now {daily_streak + 1}!")
-            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
-            await ctx.reply(embed=embed)
+
+        amount = int((DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS)*(1 + daily_streak/50))
+        await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, amount, 0, "daily reward")
+        embed = discord.Embed(title="Daily reward", color=discord.Color.gold(),
+                              description=f"You got {amount}!"
+                                          f"\nYour daily streak is now {daily_streak + 1}!")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="beg")
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -573,6 +574,8 @@ class Currency(commands.Cog):
         await ctx.reply(embed=embed)
 
     # TODO: sell command
+
+    # TODO: work command
 
     @commands.hybrid_group(name="lotto", invoke_without_command=False, with_app_command=True)
     async def lotto(self, ctx: commands.Context):
