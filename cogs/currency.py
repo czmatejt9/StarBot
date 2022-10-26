@@ -231,7 +231,7 @@ class Currency(commands.Cog):
 
     async def pay_prizes(self, winners: list, amount: int) -> list:
         jackpot = await self.get_lotto_jackpot()
-        percetages = {3: 0.1, 4: 0.25, 5: 0.65}
+        percetages = {3: 0.20, 4: 0.30, 5: 0.50}
         winners_with_prize = []
         total_people_with_correct = {}
         for user_id, correct in winners:

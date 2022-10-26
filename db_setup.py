@@ -19,7 +19,7 @@ async def main():
                          "description TEXT, sender_id INTEGER, receiver_id INTEGER, amount INTEGER, tax REAL,"
                          " FOREIGN KEY(sender_id)"
                          " REFERENCES users(user_id), FOREIGN KEY (receiver_id) REFERENCES users(user_id))")
-    await cursor.execute("CREATE TABLE IF NOT EXISTS lottery (lottery_id INTEGER PRIMARY KEY, date TEXT, winner_id INTEGER)")
+    await cursor.execute("CREATE TABLE IF NOT EXISTS lottery (lottery_id INTEGER PRIMARY KEY, date TEXT, winner_id TEXT)")
 
     await cursor.execute("CREATE TABLE IF NOT EXISTS sessions (session_id INT, pid INT, started_at TEXT, ended_at TEXT)")
     # initial insertions
