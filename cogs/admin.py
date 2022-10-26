@@ -148,7 +148,8 @@ class Admin(commands.Cog):
         else:
             cmds = await self.bot.tree.sync()
 
-        await ctx.send(f"Synced {len(cmds)} commands {'globally' if global_ else f'locally to guild {guild.name}'}")
+        await self.bot.log_to_channel(f"Synced {len(cmds)} commands "
+                                      f"{'globally' if global_ else f'locally to guild {guild.name}'}")
 
 
 def insert_returns(body):
