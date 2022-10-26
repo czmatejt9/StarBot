@@ -141,13 +141,14 @@ class Admin(commands.Cog):
     @commands.command(hidden=True, name="sync")
     async def sync(self, ctx: commands.Context, guild_id: Optional[int], global_: bool = False):
         """Syncs slash commands"""
-        if not global_:
+        if not global_:  # sync guild commands
             guild = ctx.guild if guild_id is None else discord.Object(id=guild_id)
+            self.bot.tree.copy_global_to(guild=guild)
             cmds = await self.bot.tree.sync(guild=guild)
         else:
             cmds = await self.bot.tree.sync()
 
-        await ctx.send(f"Synced {len(cmds)} commands {'globally' if global_ else 'locally'}")
+        await ctx.send(f"Synced {len(cmds)} commands {'globally' if global_ else f'locally to guild {guild.name}'}")
 
 
 def insert_returns(body):
