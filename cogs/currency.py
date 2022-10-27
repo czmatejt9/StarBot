@@ -8,13 +8,15 @@ from discord import app_commands
 import aiosqlite
 import random
 from bot import MY_GUILD_ID, StarCityBot, logger
+from utils import my_math
 
 logger.name = __name__
 
 CURRENCY_EMOTE = "💰"  # emoji for currency TODO change to custom emoji
 TAX = 0.05  # tax for sending money to another user (5%)
-DAILY_REWARD = 1000  # daily reward for using daily command
-DAILY_STREAK_BONUS = 200  # bonus for daily reward if user has a streak
+DAILY_REWARD = 10000  # daily reward for using daily command
+DAILY_STREAK_BONUS = 2000  # bonus for daily reward if user has a streak
+MONEY_FOR_WORK = 2000, 4000  # range of money for work command
 CENTRAL_BANK_ID = 1
 LOTTO_BANK_ID = 2
 ITEMS = Literal["apple", "Spjáťa's bulletproof vest", "lotto ticket"]
@@ -440,7 +442,7 @@ class Currency(commands.Cog):
     async def beg(self, ctx: commands.Context):
         """Beg for money"""
         wallet, bank = await self.get_balance(ctx.author.id)
-        if wallet + bank >= 1000:
+        if wallet + bank >= 100000:
             msg = "You already have enough money!"
         else:
             money = random.randint(10, 100)
@@ -509,6 +511,8 @@ class Currency(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
+    # todo heist command with multiple people and a chance of failure (discrd view)
+
     @commands.hybrid_command(name="gamble")
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -575,7 +579,17 @@ class Currency(commands.Cog):
 
     # TODO: sell command
 
-    # TODO: work command
+    @commands.hybrid_command(name="work")
+    @commands.cooldown(1, 60 * 30, commands.BucketType.user)  # 30 minutes
+    async def work(self, ctx: commands.Context):
+        """Work to earn money"""
+        equation, answer = my_math.generate_equation()
+        embed = discord.Embed(title="Working as Math Teacher", color=discord.Color.yellow(),
+                              description=f"Quick! answer this equation to get paid:\n{equation}")
+        lowest_money, highest_money = MONEY_FOR_WORK
+        view = my_math.MathView(embed, equation, answer, self.bot, lowest_money, highest_money, ctx.author.id)
+        msg = await ctx.reply(embed=embed, view=view)
+        view.message = msg
 
     @commands.hybrid_group(name="lotto", invoke_without_command=False, with_app_command=True)
     async def lotto(self, ctx: commands.Context):
