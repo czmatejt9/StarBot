@@ -32,8 +32,8 @@ def generate_equation(lowest: int = 1, highest: int = 100):
 
 
 class MathButton(discord.ui.Button["MathView"]):
-    def __init__(self, *, label, style, custom_id):
-        super().__init__(label=label, style=style, custom_id=custom_id)
+    def __init__(self, *, label, style):
+        super().__init__(label=label, style=style)
 
     async def callback(self, interaction: discord.Interaction):
         await self.view.process_answer(interaction, self)
@@ -57,14 +57,14 @@ class MathView(discord.ui.View):
         self.wrong_answers.append(self.answer)
         random.shuffle(self.wrong_answers)
         for each in self.wrong_answers:
-            self.add_item(MathButton(label=str(each), style=discord.ButtonStyle.blurple, custom_id=str(each)))
+            self.add_item(MathButton(label=str(each), style=discord.ButtonStyle.blurple))
 
     async def get_money_for_work(self):
         end_time = datetime.utcnow()
         return self.highest_money - (self.highest_money - self.lowest_money) * (end_time - self.start_time).total_seconds() / 10
 
     async def process_answer(self, interaction: discord.Interaction, button: MathButton):
-        correct = button.custom_id == str(self.answer)
+        correct = button.label == str(self.answer)
         if correct:
             money = await self.get_money_for_work()
             self.embed.title = f"Great work! You got {money}{CURRENCY_EMOTE}."
