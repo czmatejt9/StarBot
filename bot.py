@@ -5,7 +5,7 @@ import aiosqlite
 import discord
 from discord.ext import commands
 import config
-from .cogs.utils import formatters
+from cogs.utils import formatters
 
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
