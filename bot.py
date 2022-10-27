@@ -5,6 +5,7 @@ import aiosqlite
 import discord
 from discord.ext import commands
 import config
+from .cogs.utils import formatters
 
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
@@ -126,7 +127,7 @@ class StarCityBot(commands.Bot):
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send('Sorry. This command is disabled and cannot be used.')
         elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f"Please wait {round(error.retry_after)} seconds before using this command again")
+            await ctx.send(f"Please wait {formatters.format_seconds(round(error.retry_after))} before using this command again")
         elif isinstance(error, (commands.ArgumentParsingError, commands.MissingRequiredArgument)):
             await ctx.send(str(error))
         elif isinstance(error, commands.CommandNotFound):
