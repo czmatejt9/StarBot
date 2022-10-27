@@ -585,7 +585,7 @@ class Currency(commands.Cog):
         """Work to earn money"""
         equation, answer = my_math.generate_equation()
         embed = discord.Embed(title="Working as Math Teacher", color=discord.Color.yellow(),
-                              description=f"Quick! answer this equation to get paid:\n{equation}")
+                              description=f"Quick! You got 10 seconds answer this equation to get paid:\n{equation}")
         lowest_money, highest_money = MONEY_FOR_WORK
         view = my_math.MathView(embed, equation, answer, self.bot, lowest_money, highest_money, ctx.author.id)
         msg = await ctx.reply(embed=embed, view=view)

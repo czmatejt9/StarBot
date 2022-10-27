@@ -42,7 +42,7 @@ class MathButton(discord.ui.Button["MathView"]):
 class MathView(discord.ui.View):
     def __init__(self, embed: discord.Embed, equation: str, answer: int, bot: StarCityBot,
                  lowest_money: int, highest_money: int, user_id: int):
-        super().__init__(timeout=10.0)
+        super().__init__(timeout=11.0)
         self.user_id = user_id
         self.embed = embed
         self.equation, self.answer = equation, answer
@@ -84,7 +84,7 @@ class MathView(discord.ui.View):
         self.stop()
 
     async def interaction_check(self, interaction: discord.Interaction):
-        if interaction.user.id != interaction.message.author.id:
+        if interaction.user.id != self.user_id:
             await interaction.response.send_message("You are not the author of this message!", ephemeral=True)
             return False
         return True
