@@ -61,7 +61,8 @@ class MathView(discord.ui.View):
 
     async def get_money_for_work(self):
         end_time = datetime.utcnow()
-        return self.highest_money - (self.highest_money - self.lowest_money) * (end_time - self.start_time).total_seconds() / 10
+        return int(self.highest_money
+                   - (self.highest_money - self.lowest_money) * (end_time - self.start_time).total_seconds() / 10)
 
     async def process_answer(self, interaction: discord.Interaction, button: MathButton):
         correct = button.label == str(self.answer)
