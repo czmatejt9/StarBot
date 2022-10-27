@@ -127,7 +127,8 @@ class StarCityBot(commands.Bot):
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send('Sorry. This command is disabled and cannot be used.')
         elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f"Please wait {formatters.format_seconds(round(error.retry_after))} before using this command again")
+            time_left = formatters.format_seconds(round(error.retry_after))
+            await ctx.send(f"Please wait {time_left} before using this command again")
         elif isinstance(error, (commands.ArgumentParsingError, commands.MissingRequiredArgument)):
             await ctx.send(str(error))
         elif isinstance(error, commands.CommandNotFound):
