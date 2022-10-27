@@ -47,6 +47,12 @@ class Admin(commands.Cog):
         await self.turn_off("update")
 
     @commands.command(hidden=True)
+    async def system(self, ctx: commands.Context, *, command: str):
+        """runs a system command"""
+        os.system(command)
+        await ctx.send("Done")
+
+    @commands.command(hidden=True)
     async def eval(self, ctx: commands.Context, *, msg: str):
         """Evaluates input.
         Input is interpreted as newline seperated statements.
@@ -150,6 +156,26 @@ class Admin(commands.Cog):
 
         await self.bot.log_to_channel(f"Synced {len(cmds)} commands "
                                       f"{'globally' if global_ else f'locally to guild {guild.name}'}")
+
+    @commands.command(hidden=True)
+    async def load(self, ctx: commands.Context, *, module: str):
+        """Loads a module."""
+        try:
+            await self.bot.load_extension(module)
+        except commands.ExtensionError as e:
+            await ctx.send(f'{e.__class__.__name__}: {e}')
+        else:
+            await ctx.send('\N{OK HAND SIGN}')
+
+    @commands.command(hidden=True)
+    async def unload(self, ctx: commands.Context, *, module: str):
+        """Unloads a module."""
+        try:
+            await self.bot.unload_extension(module)
+        except commands.ExtensionError as e:
+            await ctx.send(f'{e.__class__.__name__}: {e}')
+        else:
+            await ctx.send('\N{OK HAND SIGN}')
 
 
 def insert_returns(body):
