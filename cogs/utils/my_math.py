@@ -2,8 +2,9 @@ import random
 from datetime import datetime
 
 from bot import StarCityBot
-from cogs.currency import CURRENCY_EMOTE
 import discord.ui
+
+CURRENCY_EMOTE = "💰"
 
 
 def generate_equation(lowest: int = 1, highest: int = 100):
