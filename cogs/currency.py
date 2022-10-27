@@ -8,7 +8,7 @@ from discord import app_commands
 import aiosqlite
 import random
 from bot import MY_GUILD_ID, StarCityBot, logger
-from utils import my_math
+from .utils import my_math
 
 logger.name = __name__
 
