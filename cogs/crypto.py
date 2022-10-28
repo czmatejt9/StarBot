@@ -46,6 +46,7 @@ class Crypto(commands.Cog):
 
     @crypto.command(name="prices", with_app_command=True)
     async def crypto_prices(self, ctx: commands.Context):
+        await ctx.send(str(self.current_crypto_prices))
         """Get the current price of all cryptos"""
         embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple())
         for name_s, price in self.current_crypto_prices.items():
