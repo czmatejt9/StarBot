@@ -86,11 +86,12 @@ class Crypto(commands.Cog):
         plt.figure(figsize=(16, 9))
         plt.plot(bars.keys(), bars.values())
         plt.xlabel("Time")
-        plt.ylabel("Price")
+        plt.ylabel("Price", rotation=0)
         plt.grid()
         plt.xticks(rotation=45)
+        plt.yticks(rotation=45)
         plt.title(f"{crypto_name} price over the last {timeframe}. (Price in USD, Time in UTC)" if timeframe != "today"
-                  else f"{crypto_name} price today. (Price in USD, Time in UTC)")
+                  else f"{crypto_name} price today. (Price in USD, Time in UTC)", fontdict={"fontsize": 20})
         plt.savefig("images/graph.png")
         plt.clf()
         return "images/graph.png"
