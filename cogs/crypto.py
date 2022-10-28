@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 from typing import Optional, Literal
 import matplotlib.pyplot as plt
@@ -11,6 +12,7 @@ from bot import StarCityBot, MY_GUILD_ID
 from alpaca_trade_api import REST, TimeFrame
 from bot import ALPACA_BASE_URL, ALPACA_KEY_ID, ALPACA_SECRET_KEY
 
+HOME_PATH = os.path.dirname(os.path.abspath(__name__))
 alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
 crypto_symbols = alpaca.list_assets(status='active', asset_class='crypto')
 crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in crypto_symbols
@@ -198,7 +200,7 @@ class Crypto(commands.Cog):
                            time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
         """Get the graph of a crypto"""
         file = self.generate_crypto_graph(crypto_name.name, time_frame)
-        file = discord.File(file, filename=file)
+        file = discord.File(f"{HOME_PATH}/{file}", filename=file.split("/")[-1])
         await ctx.reply(file=file)
 
 
