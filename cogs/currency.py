@@ -7,7 +7,7 @@ from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
 import random
-from bot import MY_GUILD_ID, StarCityBot, logger
+from bot import MY_GUILD_ID, StarCityBot, logger, GAMBLE_RANDOM
 from .utils import my_math
 
 logger.name = __name__
@@ -532,7 +532,7 @@ class Currency(commands.Cog):
         if guess not in ("higher", "lower"):
             return await ctx.reply("Guess must be 'higher' or 'lower'!")
 
-        dice = random.randint(1, 6)
+        dice = GAMBLE_RANDOM.randint(1, 6)
         starbot_guess = random.randint(1, 6)
         if (dice < starbot_guess and guess == "lower") or (dice > starbot_guess and guess == "higher"):
             await self.transfer_money(self.bot.id, ctx.author.id, amount, 0, "gambling")

@@ -1,5 +1,6 @@
 import logging
 import logging.handlers
+import random
 import os
 import aiosqlite
 import discord
@@ -10,6 +11,7 @@ from cogs.utils import formatters
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
 LOG_CHANNEL_ID = config.LOG_CHANNEL_ID
+GAMBLE_RANDOM = random.Random(config.GAMBLE_SEED)
 ALPACA_BASE_URL = config.ALPACA_BASE_URL
 ALPACA_KEY_ID = config.ALPACA_KEY_ID
 ALPACA_SECRET_KEY = config.ALPACA_SECRET_KEY
