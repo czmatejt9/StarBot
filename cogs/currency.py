@@ -546,7 +546,7 @@ class Currency(commands.Cog):
                                               f"And you guessed incorrectly `{guess}`")
         else:
             embed = discord.Embed(title="It's a tie!", color=discord.Color.gold(),
-                                  description=f"You rolled {guess}. StarBot rolled {starbot_guess}.\n"
+                                  description=f"You rolled {dice}. StarBot rolled {starbot_guess}.\n"
                                               f"You both rolled the same number so you don't lose or gain anything.")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
