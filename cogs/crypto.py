@@ -83,6 +83,7 @@ class Crypto(commands.Cog):
             else TimeFrame.Hour if timeframe in {"3days", "1week"} else TimeFrame.Day
         bars = alpaca.get_crypto_bars(symbol, timeunit, (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%d"))
         bars = {bar.t.astimezone(pytz.utc): bar.c for bar in bars}
+        plt.figure(figsize=(16, 9))
         plt.plot(bars.keys(), bars.values())
         plt.xlabel("Time")
         plt.ylabel("Price")
