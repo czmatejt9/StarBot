@@ -515,7 +515,7 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="gamble")
     @app_commands.describe(guess="higher or lower", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, guess: Literal[1, 2], amount: str):
+    async def gamble(self, ctx: commands.Context, guess: Literal[tuple('higher', 'lower')], amount: str):
         """Gamble your money! Guess if you will roll more or less than computer on a 6-sided dice"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
