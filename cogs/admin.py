@@ -177,6 +177,26 @@ class Admin(commands.Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
+    @commands.command(hidden=True, name="disable")
+    async def disable_command(self, ctx: commands.Context, command: str):
+        """Disables a command"""
+        command = self.bot.get_command(command)
+        if command is None:
+            await ctx.send("Command not found")
+            return
+        command.enabled = False
+        await ctx.send("Command disabled")
+
+    @commands.command(hidden=True, name="enable")
+    async def enable_command(self, ctx: commands.Context, command: str):
+        """Enables a command"""
+        command = self.bot.get_command(command)
+        if command is None:
+            await ctx.send("Command not found")
+            return
+        command.enabled = True
+        await ctx.send("Command enabled")
+
 
 def insert_returns(body):
     # insert return stmt if the last expression is an expression statement

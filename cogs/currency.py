@@ -510,13 +510,13 @@ class Currency(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
-    # todo heist command with multiple people and a chance of failure (discrd view)
+    # todo heist command with multiple people and a chance of failure (discord view)
 
     @commands.hybrid_command(name="gamble")
-    @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
+    @app_commands.describe(guess="higher or lower", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, guess: Literal["higher", "lower"], amount: str):
-        """Gamble your money against StarBot! Guess if you will roll more or less than Starbot on a 6-sided dice"""
+    async def gamble(self, ctx: commands.Context, guess: Literal[1, 2], amount: str):
+        """Gamble your money! Guess if you will roll more or less than computer on a 6-sided dice"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet
