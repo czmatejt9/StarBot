@@ -79,8 +79,8 @@ class Crypto(commands.Cog):
         symbol = self.crypto_symbols_dict[crypto_name]
         str_to_days = {"today": 0, "3days": 2, "1week": 6, "1month": 30, "3months": 90, "6months": 182, "1year": 364}
         days = str_to_days[timeframe]
-        timeunit = TimeFrame.Minute if timeframe in {"today", "3days"}\
-            else TimeFrame.Hour if timeframe in {"1week", "1month"} else TimeFrame.Day
+        timeunit = TimeFrame.Minute if timeframe in {"today"}\
+            else TimeFrame.Hour if timeframe in {"3days", "1week"} else TimeFrame.Day
         bars = alpaca.get_crypto_bars(symbol, timeunit, (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%d"))
         bars = {bar.t.astimezone(pytz.utc): bar.c for bar in bars}
         plt.plot(bars.keys(), bars.values())
