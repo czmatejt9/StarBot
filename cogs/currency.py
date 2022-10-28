@@ -515,9 +515,8 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="gamble")
     @app_commands.describe(guess="number from 1 to 6", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, guess: Literal[1, 2, 3, 4, 5, 6], amount: str):
-        """Gamble your money against StarBot! Guess which number will be rolled on a 6-sided dice,
-         StarBot also takes a guess, if yours is closer you win"""
+    async def gamble(self, ctx: commands.Context, guess: Literal["higher", "lower"], amount: str):
+        """Gamble your money against StarBot! Guess if you will roll more or less than Starbot on a 6-sided dice"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet
@@ -530,23 +529,25 @@ class Currency(commands.Cog):
             return await ctx.reply("Amount must be positive!")
         if amount > wallet:
             return await ctx.reply("You don't have that much money!")
+        if guess not in ("higher", "lower"):
+            return await ctx.reply("Guess must be 'higher' or 'lower'!")
 
         dice = random.randint(1, 6)
         starbot_guess = random.randint(1, 6)
-        if abs(guess - dice) < abs(starbot_guess - dice):
+        if (dice < starbot_guess and guess == "lower") or (dice > starbot_guess and guess == "higher"):
             await self.transfer_money(self.bot.id, ctx.author.id, amount, 0, "gambling")
             embed = discord.Embed(title=f"You won {amount}{CURRENCY_EMOTE}!", color=discord.Color.green(),
-                                  description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
-                                              f"The dice rolled {dice}")
-        elif abs(guess - dice) > abs(starbot_guess - dice):
+                                  description=f"You rolled {dice}. StarBot rolled {starbot_guess}.\n"
+                                              f"And you guessed correctly `{guess}`")
+        elif dice != starbot_guess:
             await self.transfer_money(ctx.author.id, self.bot.id, amount, 0, "gambling")
             embed = discord.Embed(title=f"You lost {amount}{CURRENCY_EMOTE}!", color=discord.Color.red(),
-                                  description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
-                                              f"The dice rolled {dice}")
+                                  description=f"You rolled {dice}. StarBot rolled {starbot_guess}.\n"
+                                              f"And you guessed incorrectly `{guess}`")
         else:
             embed = discord.Embed(title="It's a tie!", color=discord.Color.gold(),
-                                  description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
-                                              f"The dice rolled {dice}")
+                                  description=f"You rolled {guess}. StarBot rolled {starbot_guess}.\n"
+                                              f"You both rolled the same number so you don't lose or gain anything.")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
