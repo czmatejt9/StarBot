@@ -85,13 +85,14 @@ class Crypto(commands.Cog):
         bars = {bar.t.astimezone(pytz.utc): bar.c for bar in bars}
         plt.figure(figsize=(16, 9))
         plt.plot(bars.keys(), bars.values())
-        plt.xlabel("Time")
-        plt.ylabel("Price", rotation=0)
+        plt.xlabel("Time", fontdict={"fontsize": 16, "fontweight": "bold", "horizontalalignment": "right"})
+        plt.ylabel("Price", rotation=0, fontdict={"fontsize": 16, "verticalalignment": "top", "fontweight": "bold"})
         plt.grid()
         plt.xticks(rotation=45)
         plt.yticks(rotation=45)
         plt.title(f"{crypto_name} price over the last {timeframe}. (Price in USD, Time in UTC)" if timeframe != "today"
-                  else f"{crypto_name} price today. (Price in USD, Time in UTC)", fontdict={"fontsize": 20})
+                  else f"{crypto_name} price today. (Price in USD, Time in UTC)",
+                  fontdict={"fontsize": 20, "fontweight": "bold"})
         plt.savefig("images/graph.png")
         plt.clf()
         return "images/graph.png"
