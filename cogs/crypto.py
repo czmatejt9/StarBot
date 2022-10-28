@@ -159,10 +159,10 @@ class Crypto(commands.Cog):
         if crypto_holds := await self.get_crypto_holds(ctx.author.id):
             crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
             for coin, amount in crypto_holds:
-                description_string += f"{coin:16} {amount}\n"
+                description_string += f"{coin:21} - {amount}\n"
         else:
             description_string = "This user doesn't own any crypto"
-        embed = discord.Embed(title=f"{member.mention}'s crypto wallet", description=description_string)
+        embed = discord.Embed(title=f"{member.name}'s crypto wallet", description=description_string)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
