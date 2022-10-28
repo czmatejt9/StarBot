@@ -85,8 +85,8 @@ class Crypto(commands.Cog):
         bars = {bar.t.astimezone(pytz.utc): bar.c for bar in bars}
         plt.figure(figsize=(16, 9))
         plt.plot(bars.keys(), bars.values())
-        plt.xlabel("Time", fontdict={"fontsize": 16, "fontweight": "bold", "horizontalalignment": "right"})
-        plt.ylabel("Price", rotation=0, fontdict={"fontsize": 16, "verticalalignment": "top", "fontweight": "bold"})
+        plt.xlabel("Time", fontdict={"fontsize": 16, "fontweight": "bold", "verticalalignment": "right", "horizontalalignment": "right"})
+        plt.ylabel("Price", rotation=0, fontdict={"fontsize": 16, "fontweight": "bold", "verticalalignment": "right", "horizontalalignment": "right"})
         plt.grid()
         plt.xticks(rotation=45)
         plt.yticks(rotation=45)
