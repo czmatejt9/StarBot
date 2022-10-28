@@ -10,6 +10,9 @@ from cogs.utils import formatters
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
 LOG_CHANNEL_ID = config.LOG_CHANNEL_ID
+ALPACA_BASE_URL = config.ALPACA_BASE_URL
+ALPACA_KEY_ID = config.ALPACA_KEY_ID
+ALPACA_SECRET_KEY = config.ALPACA_SECRET_KEY
 DEFAULT_PREFIX = "s!"
 HOME_PATH = os.path.dirname(os.path.abspath(__name__))
 DB_NAME = "bot.db"
@@ -56,6 +59,7 @@ class StarCityBot(commands.Bot):
         self.db: aiosqlite.Connection = None
         self.id = 0
         self.session_id = None
+        self.alpaca = None
         self.failed_cogs = []
 
     async def setup_db(self):
@@ -76,6 +80,7 @@ class StarCityBot(commands.Bot):
         self.session_id = _id + 1
 
     async def setup_hook(self) -> None:
+        """setting up the bot"""
         # sqlite
         await self.setup_db()
         # loading extensions
