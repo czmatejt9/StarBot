@@ -48,6 +48,7 @@ class Crypto(commands.Cog):
         for (name, symbol), price in self.current_crypto_prices.items():
             embed.add_field(name=f"{name} ({symbol})", value=f"${price: .2f}", inline=False)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.send(embed=embed)
 
 
