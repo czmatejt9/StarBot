@@ -157,14 +157,14 @@ class Crypto(commands.Cog):
             member = ctx.author
 
         embed = discord.Embed(title=f"{member.name}'s crypto wallet")
-        if crypto_holds := await self.get_crypto_holds(ctx.author.id):
+        if crypto_holds := await self.get_crypto_holds(member.id):
             crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
             for coin, amount in crypto_holds:
                 embed.add_field(name=f"{coin}", value=f"{amount} ~ {self.get_current_crypto_price(coin) * amount}"
                                                       f"{CURRENCY_EMOTE}", inline=False)
         else:
             embed.add_field(name="No crypto", value="You don't have any crypto in your wallet")
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        embed.set_author(name=member.display_name, icon_url=member.display_avatar)
         await ctx.reply(embed=embed)
 
 
