@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from bot import StarCityBot, MY_GUILD_ID
 from alpaca_trade_api import REST
-from config import ALPACA_BASE_URL, ALPACA_KEY_ID, ALPACA_SECRET_KEY
+from bot import ALPACA_BASE_URL, ALPACA_KEY_ID, ALPACA_SECRET_KEY
 
 
 def get_latest_bar(alpaca: REST, symbol):
