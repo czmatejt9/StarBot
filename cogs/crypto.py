@@ -34,7 +34,7 @@ class Crypto(commands.Cog):
             self.bot.alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
         for symbol, name in self.crypto_symbols:
             c_time, close = get_latest_bar(self.bot.alpaca, symbol)
-            self.current_crypto_prices[(name.split()[0], symbol[:-3])] = close
+            self.current_crypto_prices[(name.split("/")[0][:-1], symbol[:-3])] = close
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
     async def crypto(self, ctx: commands.Context):
