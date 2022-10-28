@@ -1,8 +1,16 @@
+from enum import Enum
 import discord
 from discord.ext import commands, tasks
 from bot import StarCityBot, MY_GUILD_ID
 from alpaca_trade_api import REST
 from bot import ALPACA_BASE_URL, ALPACA_KEY_ID, ALPACA_SECRET_KEY
+alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
+crypto_symbols = alpaca.list_assets(status='active', asset_class='crypto')
+crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in crypto_symbols
+                        if asset.tradable and "/USDT" not in asset.symbol and "/USD" in asset.symbol],
+                        key=lambda x: x[0])
+available_cryptos = Enum("available_cryptos", {name.split("/")[0] + symbol[:-3]: i
+                                               for i, (name, symbol) in enumerate(crypto_symbols)})
 
 
 def get_latest_bar(alpaca: REST, symbol):
@@ -16,25 +24,19 @@ def get_latest_bar(alpaca: REST, symbol):
 class Crypto(commands.Cog):
     def __init__(self, bot):
         self.bot: StarCityBot = bot
-        self.crypto_symbols = self.bot.alpaca.list_assets(status='active', asset_class='crypto')
-        self.crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in self.crypto_symbols
-                                      if asset.tradable and "/USDT" not in asset.symbol and "/USD" in asset.symbol],
-                                     key=lambda x: x[0])
+        self.crypto_symbols = crypto_symbols
         self.current_crypto_prices = {}
         self.update_crypto_prices.start()
 
     def cog_unload(self):
         self.update_crypto_prices.cancel()
-        self.bot.alpaca.close()
-        self.bot.alpaca = None
+        alpaca.close()
 
     @tasks.loop(minutes=5)
     async def update_crypto_prices(self):
-        if self.bot.alpaca is None:
-            self.bot.alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
         for symbol, name in self.crypto_symbols:
-            c_time, close = get_latest_bar(self.bot.alpaca, symbol)
-            self.current_crypto_prices[(name.split("/")[0][:-1], symbol[:-3])] = close
+            c_time, close = get_latest_bar(alpaca, symbol)
+            self.current_crypto_prices[name.split("/")[0] + symbol[:-3]] = close
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
     async def crypto(self, ctx: commands.Context):
@@ -51,7 +53,15 @@ class Crypto(commands.Cog):
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.send(embed=embed)
 
+    @crypto.command(name="price", with_app_command=True)
+    async def crypto_price(self, ctx: commands.Context, name: available_cryptos):
+        """Get the current price of a crypto"""
+        embed = discord.Embed(title=f"Current {name} price", color=discord.Color.blurple(),
+                              description=f"${self.current_crypto_prices[name]: .5f}")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
+        await ctx.send(embed=embed)
+
 
 async def setup(bot: StarCityBot):
-    bot.alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
     await bot.add_cog(Crypto(bot))
