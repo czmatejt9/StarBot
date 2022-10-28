@@ -4,6 +4,7 @@ from discord.ext import commands, tasks
 from bot import StarCityBot, MY_GUILD_ID
 from alpaca_trade_api import REST
 from bot import ALPACA_BASE_URL, ALPACA_KEY_ID, ALPACA_SECRET_KEY
+
 alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
 crypto_symbols = alpaca.list_assets(status='active', asset_class='crypto')
 crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in crypto_symbols
@@ -47,8 +48,8 @@ class Crypto(commands.Cog):
     async def crypto_prices(self, ctx: commands.Context):
         """Get the current price of all cryptos"""
         embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple())
-        for (name, symbol), price in self.current_crypto_prices.items():
-            embed.add_field(name=f"{name} ({symbol})", value=f"${price: .2f}", inline=False)
+        for name_s, price in self.current_crypto_prices.items():
+            embed.add_field(name=f"{name_s.split()[0]} ({name_s.split[1]})", value=f"${price: .2f}", inline=False)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.send(embed=embed)
