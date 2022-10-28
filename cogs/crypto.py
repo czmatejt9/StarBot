@@ -92,7 +92,7 @@ class Crypto(commands.Cog):
                   else f"{crypto_name} price today. (Price in USD, Time in UTC)")
         plt.savefig("images/graph.png")
         plt.clf()
-        return f"images/{symbol}_{timeframe}.png"
+        return "images/graph.png"
 
     def get_current_crypto_price(self, crypto):
         return self.current_crypto_prices[crypto]
