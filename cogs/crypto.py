@@ -10,7 +10,7 @@ crypto_symbols = alpaca.list_assets(status='active', asset_class='crypto')
 crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in crypto_symbols
                         if asset.tradable and "/USDT" not in asset.symbol and "/USD" in asset.symbol],
                         key=lambda x: x[0])
-available_cryptos = Enum("available_cryptos", {name.split("/")[0] + symbol[:-3]: i
+available_cryptos = Enum("available_cryptos", {name.split("/")[0] + "(" + symbol[:-3] + ")": i
                                                for i, (symbol, name) in enumerate(crypto_symbols)})
 
 
@@ -37,7 +37,7 @@ class Crypto(commands.Cog):
     async def update_crypto_prices(self):
         for symbol, name in self.crypto_symbols:
             c_time, close = get_latest_bar(alpaca, symbol)
-            self.current_crypto_prices[name.split("/")[0] + symbol[:-3]] = close
+            self.current_crypto_prices[name.split("/")[0] + "(" + symbol[:-3] + ")"] = close
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
     async def crypto(self, ctx: commands.Context):
@@ -50,7 +50,7 @@ class Crypto(commands.Cog):
         """Get the current price of all cryptos"""
         embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple())
         for name_s, price in self.current_crypto_prices.items():
-            embed.add_field(name=f"{name_s.split()[0]} ({name_s.split[1]})", value=f"${price: .2f}", inline=False)
+            embed.add_field(name=f"{name_s}", value=f"${price: .2f}", inline=False)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.send(embed=embed)
@@ -58,8 +58,8 @@ class Crypto(commands.Cog):
     @crypto.command(name="price", with_app_command=True)
     async def crypto_price(self, ctx: commands.Context, name: available_cryptos):
         """Get the current price of a crypto"""
-        embed = discord.Embed(title=f"Current {name} price", color=discord.Color.blurple(),
-                              description=f"${self.current_crypto_prices[name]: .5f}")
+        embed = discord.Embed(title=f"Current {name.name} price", color=discord.Color.blurple(),
+                              description=f"${self.current_crypto_prices[name.name]: .5f}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.send(embed=embed)
