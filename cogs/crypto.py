@@ -68,7 +68,7 @@ class Crypto(commands.Cog):
     def get_current_crypto_price(self, crypto):
         return self.current_crypto_prices[crypto]
 
-    def give_crypto(self, user_id, crypto, amount, price_per_unit):
+    async def give_crypto(self, user_id, crypto, amount, price_per_unit):
         async with self.bot.db.cursor() as cursor:
             # check if user has crypto
             await cursor.execute("SELECT * FROM crypto_holdings WHERE user_id = ? AND coin = ?", (user_id, crypto))
