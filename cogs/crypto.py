@@ -41,11 +41,8 @@ class Confirm(discord.ui.View):
         self.embed.title = "Confirmed ✅"
         self.embed.set_footer(text="Purchase confirmed")
         await interaction.response.edit_message(embed=self.embed, view=None)
-        try:
-            await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.amount, 0,
+        await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.price, 0,
                                                                      f"{self.crypto} purchase")
-        except Exception as e:
-            await self.crypto_cls.bot.log_to_channel(f"Error while transferring money: {e}")
         await self.crypto_cls.give_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
         self.stop()
 
