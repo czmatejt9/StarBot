@@ -10,7 +10,7 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
                         if asset.tradable and "/USDT" not in asset.symbol and "/USD" in asset.symbol],
                         key=lambda x: x[0])
 available_cryptos = Enum("available_cryptos", {name.split("/")[0] + symbol[:-3]: i
-                                               for i, (name, symbol) in enumerate(crypto_symbols)})
+                                               for i, (symbol, name) in enumerate(crypto_symbols)})
 
 
 def get_latest_bar(alpaca: REST, symbol):
