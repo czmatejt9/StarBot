@@ -47,7 +47,7 @@ class Crypto(commands.Cog):
         embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple())
         for (name, symbol), price in self.current_crypto_prices.items():
             embed.add_field(name=f"{name} ({symbol})", value=f"${price:,.2f}", inline=False)
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.send(embed=embed)
 
 
