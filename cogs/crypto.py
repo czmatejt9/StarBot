@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import Optional
+
+import aiosqlite
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -85,6 +88,13 @@ class Crypto(commands.Cog):
                 await cursor.execute("INSERT INTO crypto_holdings VALUES (?, ?, ?, ?)",
                                      (user_id, crypto, amount, price_per_unit))
 
+    async def get_crypto_holds(self, user_id):
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT coin, amount FROM crypto_holdings WHERE user_id = ?", (user_id, ))
+            crypto_holds = await cursor.fetchall()
+        return list(crypto_holds) if crypto_holds else None
+
 # #######################################TASKS##############################################
     @tasks.loop(minutes=5)
     async def update_crypto_prices(self):
@@ -106,18 +116,17 @@ class Crypto(commands.Cog):
             embed.add_field(name=f"{name_s}", value=f"${price: .2f}", inline=False)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @crypto.command(name="price", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to get the price of")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_price(self, ctx: commands.Context, *, crypto_name: available_cryptos):
         """Get the current price of a crypto"""
         embed = discord.Embed(title=f"Current {crypto_name.name} price", color=discord.Color.blurple(),
                               description=f"${self.get_current_crypto_price(crypto_name.name): .5f}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @crypto.command(name="buy", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to buy",
@@ -128,7 +137,7 @@ class Crypto(commands.Cog):
         wallet, bank = await self.currency.get_balance(ctx.author.id)
         price = int(self.get_current_crypto_price(crypto_name.name) * (1 + CRYPTO_TRADING_COMMISSION) * amount)
         if price > wallet:
-            return await ctx.send(f"You don't have enough money in your wallet to buy this amount of {crypto_name.name}.")
+            return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name.name}.")
         embed = discord.Embed(
             title="Review your order", color=discord.Color.blurple(),
             description=f"Buying {amount} {crypto_name.name} for "
@@ -136,7 +145,26 @@ class Crypto(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
         view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self)
-        await ctx.send(embed=embed, view=view)
+        await ctx.reply(embed=embed, view=view)
+
+    # show how much crypto user have
+    @crypto.command(name="wallet")
+    @app_commands.describe(member="user to check balance of, leave blank to check your own balance")
+    async def crypto_wallet(self, ctx: commands.Context, member: Optional[discord.Member]):
+        """Check yours or someone's crypto wallet"""
+        if member is None:
+            member = ctx.author
+
+        description_string = ""
+        if crypto_holds := await self.get_crypto_holds(ctx.author.id):
+            crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
+            for coin, amount in crypto_holds:
+                description_string += f"{coin:16} {amount}\n"
+        else:
+            description_string = "This user doesn't own any crypto"
+        embed = discord.Embed(title=f"{member.mention}'s crypto wallet", description=description_string)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot: StarCityBot):
