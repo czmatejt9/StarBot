@@ -156,14 +156,13 @@ class Crypto(commands.Cog):
         if member is None:
             member = ctx.author
 
-        description_string = ""
+        embed = discord.Embed(title=f"{member.name}'s crypto wallet")
         if crypto_holds := await self.get_crypto_holds(ctx.author.id):
             crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
             for coin, amount in crypto_holds:
-                description_string += f"{coin}{' '*(25-len(coin))}{amount}\n"
+                embed.add_field(name=f"{coin}", value=f"{amount}", inline=False)
         else:
-            description_string = "This user doesn't own any crypto"
-        embed = discord.Embed(title=f"{member.name}'s crypto wallet", description=description_string)
+            embed.add_field(name="No crypto", value="You don't have any crypto in your wallet")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
