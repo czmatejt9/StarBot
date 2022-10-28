@@ -90,7 +90,7 @@ class Crypto(commands.Cog):
         plt.xticks(rotation=45)
         plt.title(f"{crypto_name} price over the last {timeframe}. (Price in USD, Time in UTC)" if timeframe != "today"
                   else f"{crypto_name} price today. (Price in USD, Time in UTC)")
-        plt.savefig(f"images/{symbol}_{timeframe}.png")
+        plt.savefig(f"{HOME_PATH}/images/{symbol}_{timeframe}.png")
         plt.clf()
         return f"images/{symbol}_{timeframe}.png"
 
