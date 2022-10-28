@@ -1,5 +1,6 @@
 from enum import Enum
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from bot import StarCityBot, MY_GUILD_ID
 from alpaca_trade_api import REST
@@ -55,6 +56,8 @@ class Crypto(commands.Cog):
         await ctx.send(embed=embed)
 
     @crypto.command(name="price", with_app_command=True)
+    @app_commands.describe(crypto_name="The name of the crypto you want to get the price of")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_price(self, ctx: commands.Context, *, crypto_name: available_cryptos):
         """Get the current price of a crypto"""
         embed = discord.Embed(title=f"Current {crypto_name.name} price", color=discord.Color.blurple(),
