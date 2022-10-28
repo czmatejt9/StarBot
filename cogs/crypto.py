@@ -41,7 +41,8 @@ class Confirm(discord.ui.View):
         self.embed.title = "Confirmed ✅"
         self.embed.set_footer(text="Purchase confirmed")
         await interaction.response.edit_message(embed=self.embed, view=None)
-        await self.crypto_cls.currency.transfer_money(self.user_id, 1, self.amount, 0, f"{self.crypto} purchase")
+        await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.amount, 0,
+                                                                     f"{self.crypto} purchase")
         await self.crypto_cls.give_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
         self.stop()
 
