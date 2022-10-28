@@ -133,7 +133,7 @@ class Crypto(commands.Cog):
                            amount="The amount of the crypto you want to buy")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
-        """Buy (fake) crypto (0.01% commission per trade)"""
+        """Buy (fake) crypto (0.1% commission per trade)"""
         wallet, bank = await self.currency.get_balance(ctx.author.id)
         price = int(self.get_current_crypto_price(crypto_name.name) * (1 + CRYPTO_TRADING_COMMISSION) * amount)
         if price > wallet:
@@ -150,6 +150,7 @@ class Crypto(commands.Cog):
     # show how much crypto user have
     @crypto.command(name="wallet")
     @app_commands.describe(member="user to check balance of, leave blank to check your own balance")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_wallet(self, ctx: commands.Context, member: Optional[discord.Member]):
         """Check yours or someone's crypto wallet"""
         if member is None:
@@ -159,7 +160,7 @@ class Crypto(commands.Cog):
         if crypto_holds := await self.get_crypto_holds(ctx.author.id):
             crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
             for coin, amount in crypto_holds:
-                description_string += f"{coin:21} - {amount}\n"
+                description_string += f"{coin:21} {amount}\n"
         else:
             description_string = "This user doesn't own any crypto"
         embed = discord.Embed(title=f"{member.name}'s crypto wallet", description=description_string)
