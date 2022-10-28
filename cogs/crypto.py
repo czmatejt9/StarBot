@@ -13,7 +13,7 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
                         key=lambda x: x[0])
 available_cryptos = Enum("available_cryptos", {name.split("/")[0] + "(" + symbol[:-3] + ")": i
                                                for i, (symbol, name) in enumerate(crypto_symbols)})
-CRYPTO_TRADING_COMMISSION = 0.0001  # 0.01% commission
+CRYPTO_TRADING_COMMISSION = 0.001  # 0.1% commission
 CURRENCY_EMOTE = "💰"
 
 
@@ -41,8 +41,11 @@ class Confirm(discord.ui.View):
         self.embed.title = "Confirmed ✅"
         self.embed.set_footer(text="Purchase confirmed")
         await interaction.response.edit_message(embed=self.embed, view=None)
-        await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.amount, 0,
+        try:
+            await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.amount, 0,
                                                                      f"{self.crypto} purchase")
+        except Exception as e:
+            await self.crypto_cls.bot.log_to_channel(f"Error while transferring money: {e}")
         await self.crypto_cls.give_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
         self.stop()
 
