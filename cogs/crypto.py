@@ -1,12 +1,14 @@
 from enum import Enum
-from typing import Optional
-
+from typing import Optional, Literal
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+import pytz
 import aiosqlite
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from bot import StarCityBot, MY_GUILD_ID
-from alpaca_trade_api import REST
+from alpaca_trade_api import REST, TimeFrame
 from bot import ALPACA_BASE_URL, ALPACA_KEY_ID, ALPACA_SECRET_KEY
 
 alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
@@ -29,7 +31,8 @@ def get_latest_bar(alpaca: REST, symbol):
 
 
 class Confirm(discord.ui.View):
-    def __init__(self, embed: discord.Embed, crypto: str, amount: float, price: float, user_id: int, crypto_cls: "Crypto"):
+    def __init__(self, embed: discord.Embed, crypto: str, amount: float, price: float, user_id: int,
+                 crypto_cls: "Crypto", buy_or_sell: Literal["buy", "sell"]):
         super().__init__(timeout=30.0)
         self.embed = embed
         self.crypto = crypto
@@ -38,6 +41,7 @@ class Confirm(discord.ui.View):
         self.price_per_unit = price / amount
         self.user_id = user_id
         self.crypto_cls = crypto_cls
+        self.buy_or_sell = buy_or_sell
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -60,7 +64,7 @@ class Confirm(discord.ui.View):
 class Crypto(commands.Cog):
     def __init__(self, bot):
         self.bot: StarCityBot = bot
-        self.crypto_symbols = crypto_symbols
+        self.crypto_symbols_dict = {name.split("/")[0] + "(" + symbol[:-3] + ")": symbol for symbol, name in crypto_symbols}
         self.current_crypto_prices = {}
         self.update_crypto_prices.start()
         self.currency = self.bot.get_cog("Currency")  # to access the currency cog, use self.currency
@@ -68,6 +72,25 @@ class Crypto(commands.Cog):
     def cog_unload(self):
         self.update_crypto_prices.cancel()
         alpaca.close()
+
+    def generate_crypto_graph(self, crypto_name: str,  timeframe: str):
+        symbol = self.crypto_symbols_dict[crypto_name]
+        str_to_days = {"today": 0, "3days": 2, "1week": 6, "1month": 30, "3months": 90, "6months": 182, "1year": 364}
+        days = str_to_days[timeframe]
+        timeunit = TimeFrame.Minute if timeframe in {"today", "3days"}\
+            else TimeFrame.Hour if timeframe in {"1week", "1month"} else TimeFrame.Day
+        bars = alpaca.get_crypto_bars(symbol, timeunit, (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%d"))
+        bars = {bar.t.astimezone(pytz.utc): bar.c for bar in bars}
+        plt.plot(bars.keys(), bars.values())
+        plt.xlabel("Time")
+        plt.ylabel("Price")
+        plt.grid()
+        plt.xticks(rotation=45)
+        plt.title(f"{crypto_name} price over the last {timeframe}. (Price in USD, Time in UTC)" if timeframe != "today"
+                  else f"{crypto_name} price today. (Price in USD, Time in UTC)")
+        plt.savefig(f"images/{symbol}_{timeframe}.png")
+        plt.clf()
+        return f"images/{symbol}_{timeframe}.png"
 
     def get_current_crypto_price(self, crypto):
         return self.current_crypto_prices[crypto]
@@ -144,13 +167,14 @@ class Crypto(commands.Cog):
                         f"{price}{CURRENCY_EMOTE} (including {CRYPTO_TRADING_COMMISSION * 100}% commission)")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
-        view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self)
+        view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "buy")
         await ctx.reply(embed=embed, view=view)
+
+    #TODO sell command
 
     # show how much crypto user have
     @crypto.command(name="wallet")
     @app_commands.describe(member="user to check balance of, leave blank to check your own balance")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_wallet(self, ctx: commands.Context, member: Optional[discord.Member]):
         """Check yours or someone's crypto wallet"""
         if member is None:
@@ -166,6 +190,16 @@ class Crypto(commands.Cog):
             embed.add_field(name="No crypto", value="You don't have any crypto in your wallet")
         embed.set_author(name=member.display_name, icon_url=member.display_avatar)
         await ctx.reply(embed=embed)
+
+    @crypto.command(name="graph", with_app_command=True)
+    @app_commands.describe(crypto_name="The crypto you want to get the graph of", time_frame="The time period of the graph")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def crypto_graph(self, ctx: commands.Context, crypto_name: available_cryptos,
+                           time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
+        """Get the graph of a crypto"""
+        file = self.generate_crypto_graph(crypto_name.name, time_frame)
+        file = discord.File(file, filename=file)
+        await ctx.reply(file=file)
 
 
 async def setup(bot: StarCityBot):
