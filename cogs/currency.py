@@ -395,14 +395,13 @@ class Currency(commands.Cog):
     async def leaderboard(self, ctx: commands.Context):
         """View the leaderboard of top 10 richest users"""
         async with self.bot.db.cursor() as cursor:
-            await cursor.execute("SELECT user_id, wallet + bank AS balance FROM users ORDER BY balance DESC LIMIT 10")
+            await cursor.execute("SELECT user_id, wallet + bank AS balance FROM users ORDER BY balance DESC LIMIT 13")
             rows = await cursor.fetchall()
+            rows = [(user_id, balance) for user_id, balance in rows
+                    if user_id not in (CENTRAL_BANK_ID, LOTTO_BANK_ID, self.bot.id)]
         embed = discord.Embed(title="Leaderboard", color=discord.Color.gold())
         for i, row in enumerate(rows):
             user_id, balance = row
-            if user_id in [self.bot.id, 1, 2]:
-                continue
-
             user = self.bot.get_user(user_id)
             if user is None:
                 user = await self.bot.fetch_user(user_id)
