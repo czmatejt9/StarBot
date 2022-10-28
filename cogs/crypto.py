@@ -55,10 +55,10 @@ class Crypto(commands.Cog):
         await ctx.send(embed=embed)
 
     @crypto.command(name="price", with_app_command=True)
-    async def crypto_price(self, ctx: commands.Context, *, name: available_cryptos):
+    async def crypto_price(self, ctx: commands.Context, *, crypto_name: available_cryptos):
         """Get the current price of a crypto"""
-        embed = discord.Embed(title=f"Current {name.name} price", color=discord.Color.blurple(),
-                              description=f"${self.current_crypto_prices[name.name]: .5f}")
+        embed = discord.Embed(title=f"Current {crypto_name} price", color=discord.Color.blurple(),
+                              description=f"${self.current_crypto_prices[crypto_name]: .5f}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.send(embed=embed)
