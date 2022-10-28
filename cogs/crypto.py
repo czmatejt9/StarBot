@@ -34,7 +34,7 @@ class Crypto(commands.Cog):
             self.bot.alpaca = REST(ALPACA_KEY_ID, ALPACA_SECRET_KEY, ALPACA_BASE_URL)
         for symbol, name in self.crypto_symbols:
             c_time, close = get_latest_bar(self.bot.alpaca, symbol)
-            self.current_crypto_prices[(name, symbol[:-3])] = close
+            self.current_crypto_prices[(name.split()[0], symbol[:-3])] = close
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
     async def crypto(self, ctx: commands.Context):
@@ -46,7 +46,7 @@ class Crypto(commands.Cog):
         """Get the current price of all cryptos"""
         embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple())
         for (name, symbol), price in self.current_crypto_prices.items():
-            embed.add_field(name=f"{name} ({symbol})", value=f"${price:,.2f}", inline=False)
+            embed.add_field(name=f"{name} ({symbol})", value=f"${price:,.5f}", inline=False)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.send(embed=embed)
 
