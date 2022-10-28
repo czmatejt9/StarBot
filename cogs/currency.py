@@ -38,8 +38,8 @@ class Currency(commands.Cog):
         display_name = str(user)
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            await cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                                 (user_id, display_name, 0, 0, 0, 0, 0, 0))
+            await cursor.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                 (user_id, display_name, 0, 0, 0, 0, 0, 0, 0))
             await self.bot.db.commit()
 
     async def ensure_user_exists(self, user_id: int):
