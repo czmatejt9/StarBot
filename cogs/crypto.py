@@ -86,7 +86,7 @@ class Crypto(commands.Cog):
         plt.figure(figsize=(16, 9))
         plt.plot(bars.keys(), bars.values())
         plt.xlabel("Time", fontdict={"fontsize": 16, "fontweight": "bold", "horizontalalignment": "right"})
-        plt.ylabel("Price", rotation=0, fontdict={"fontsize": 16, "fontweight": "bold", "verticalalignment": "top"})
+        plt.ylabel("Price", fontdict={"fontsize": 16, "fontweight": "bold", "verticalalignment": "top"})
         plt.grid()
         plt.xticks(rotation=45)
         plt.yticks(rotation=45)
