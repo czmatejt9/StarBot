@@ -90,7 +90,7 @@ class Crypto(commands.Cog):
         plt.xticks(rotation=45)
         plt.title(f"{crypto_name} price over the last {timeframe}. (Price in USD, Time in UTC)" if timeframe != "today"
                   else f"{crypto_name} price today. (Price in USD, Time in UTC)")
-        plt.savefig(f"/images/{symbol}_{timeframe}.png")
+        plt.savefig("images/graph.png")
         plt.clf()
         return f"images/{symbol}_{timeframe}.png"
 
@@ -200,7 +200,7 @@ class Crypto(commands.Cog):
                            time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
         """Get the graph of a crypto"""
         file = self.generate_crypto_graph(crypto_name.name, time_frame)
-        file = discord.File(f"{HOME_PATH}/{file}", filename=file.split("/")[-1])
+        file = discord.File(f"{HOME_PATH}/{file}", filename="graph.png")
         await ctx.reply(file=file)
 
 
