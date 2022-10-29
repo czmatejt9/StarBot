@@ -126,10 +126,15 @@ class Crypto(commands.Cog):
 # #######################################TASKS##############################################
     @tasks.loop(minutes=5)
     async def update_crypto_prices(self):
-        for symbol, name in self.crypto_symbols:
+        for symbol, name in crypto_symbols:
             c_time, close = get_latest_bar(alpaca, symbol)
             self.current_crypto_prices[name.split("/")[0] + "(" + symbol[:-3] + ")"] = close
 # #######################################TASKS##############################################
+    @commands.command(name="crypto_debug", hidden=True)
+    @commands.is_owner()
+    async def crypto_debug(self, ctx):
+        await ctx.send(self.current_crypto_prices)
+
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
     async def crypto(self, ctx: commands.Context):
