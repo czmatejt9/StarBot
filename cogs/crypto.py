@@ -79,6 +79,12 @@ class Confirm(discord.ui.View):
         await interaction.response.edit_message(embed=self.embed, view=None)
         self.stop()
 
+    async def interaction_check(self, interaction: discord.Interaction):
+        if interaction.user.id != self.user_id:
+            await interaction.response.send_message("You are not the author of this message!", ephemeral=True)
+            return False
+        return True
+
 
 class Crypto(commands.Cog):
     def __init__(self, bot):
