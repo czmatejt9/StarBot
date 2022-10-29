@@ -277,7 +277,6 @@ class Crypto(commands.Cog):
 
     @crypto.command(name="graph", with_app_command=True)
     @app_commands.describe(crypto_name="The crypto you want to get the graph of", time_frame="The time period of the graph")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_graph(self, ctx: commands.Context, crypto_name: available_cryptos,
                            time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
         """Get the graph of a crypto"""
