@@ -56,7 +56,6 @@ class Confirm(discord.ui.View):
                                                                          f"{self.crypto} purchase")
             await self.crypto_cls.give_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
         else:
-            self.price = self.price * (1 + CRYPTO_TRADING_COMMISSION)
             self.embed.set_footer(text="Sale confirmed")
             await interaction.response.edit_message(embed=self.embed, view=None)
 
@@ -227,6 +226,8 @@ class Crypto(commands.Cog):
             return await ctx.reply(f"You don't own any {crypto_name.name}.")
         if amount > crypto_holds[crypto_name.name]:
             return await ctx.reply(f"You don't own that much {crypto_name.name}.")
+
+        non_taxed_price = int(self.get_current_crypto_price(crypto_name.name) * amount)
         price = int(self.get_current_crypto_price(crypto_name.name) * (1 - CRYPTO_TRADING_COMMISSION) * amount)
         embed = discord.Embed(
             title="Review your SELL order", color=discord.Color.blurple(),
@@ -234,7 +235,7 @@ class Crypto(commands.Cog):
                         f"{price}{CURRENCY_EMOTE} (after {CRYPTO_TRADING_COMMISSION * 100}% commission)")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
-        view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "sell")
+        view = Confirm(embed, crypto_name.name, amount, non_taxed_price, ctx.author.id, self, "sell")
         await ctx.reply(embed=embed, view=view)
 
     # show how much crypto user have
