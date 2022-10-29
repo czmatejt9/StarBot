@@ -196,7 +196,6 @@ class Crypto(commands.Cog):
     @crypto.command(name="buy", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to buy",
                            amount="The amount of the crypto you want to buy")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Buy (fake) crypto (0.05% commission per trade)"""
         wallet, bank = await self.currency.get_balance(ctx.author.id)
@@ -215,7 +214,6 @@ class Crypto(commands.Cog):
     @crypto.command(name="sell", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to sell",
                            amount="The amount of the crypto you want to sell")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Sell your (fake) crypto (0.05% commission per trade)"""
         crypto_holds = await self.get_crypto_holds(ctx.author.id)
