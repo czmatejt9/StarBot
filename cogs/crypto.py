@@ -44,6 +44,7 @@ class Confirm(discord.ui.View):
         self.user_id = user_id
         self.crypto_cls = crypto_cls
         self.buy_or_sell = buy_or_sell
+        self.message = None
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -77,6 +78,15 @@ class Confirm(discord.ui.View):
         else:
             self.embed.set_footer(text="Sell cancelled")
         await interaction.response.edit_message(embed=self.embed, view=None)
+        self.stop()
+
+    async def on_timeout(self):
+        self.embed.title = "Timed out ⏰"
+        if self.buy_or_sell == "buy":
+            self.embed.set_footer(text="Purchase timed out")
+        else:
+            self.embed.set_footer(text="Sell timed out")
+        await self.message.edit(embed=self.embed, view=None)
         self.stop()
 
     async def interaction_check(self, interaction: discord.Interaction):
@@ -217,7 +227,8 @@ class Crypto(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
         view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "buy")
-        await ctx.reply(embed=embed, view=view)
+        msg = await ctx.reply(embed=embed, view=view)
+        view.message = msg
 
     @crypto.command(name="sell", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to sell",
@@ -242,7 +253,8 @@ class Crypto(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
         view = Confirm(embed, crypto_name.name, amount, non_taxed_price, ctx.author.id, self, "sell")
-        await ctx.reply(embed=embed, view=view)
+        msg = await ctx.reply(embed=embed, view=view)
+        view.message = msg
 
     # show how much crypto user have
     @crypto.command(name="wallet")
