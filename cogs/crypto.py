@@ -202,6 +202,8 @@ class Crypto(commands.Cog):
         price = int(self.get_current_crypto_price(crypto_name.name) * (1 + CRYPTO_TRADING_COMMISSION) * amount)
         if price > wallet:
             return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name.name}.")
+        if price == 0:  # minimal price is 1
+            price = 1
         embed = discord.Embed(
             title="Review your PURCHASE order", color=discord.Color.blurple(),
             description=f"Buying {amount} {crypto_name.name} for "
