@@ -20,7 +20,7 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
                         key=lambda x: x[0])
 available_cryptos = Enum("available_cryptos", {name.split("/")[0] + "(" + symbol[:-3] + ")": i
                                                for i, (symbol, name) in enumerate(crypto_symbols)})
-CRYPTO_TRADING_COMMISSION = 0.001  # 0.1% commission
+CRYPTO_TRADING_COMMISSION = 0.0005  # 0.05% commission
 CURRENCY_EMOTE = "💰"
 
 
@@ -48,17 +48,35 @@ class Confirm(discord.ui.View):
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.embed.title = "Confirmed ✅"
-        self.embed.set_footer(text="Purchase confirmed")
-        await interaction.response.edit_message(embed=self.embed, view=None)
-        await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.price, 0,
-                                                                     f"{self.crypto} purchase")
-        await self.crypto_cls.give_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
+        if self.buy_or_sell == "buy":
+            self.embed.set_footer(text="Purchase confirmed")
+            await interaction.response.edit_message(embed=self.embed, view=None)
+
+            await self.crypto_cls.bot.get_cog("Currency").transfer_money(self.user_id, 1, self.price, 0,
+                                                                         f"{self.crypto} purchase")
+            await self.crypto_cls.give_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
+        else:
+            self.price = self.price * (1 + CRYPTO_TRADING_COMMISSION)
+            self.embed.set_footer(text="Sale confirmed")
+            await interaction.response.edit_message(embed=self.embed, view=None)
+
+            await self.crypto_cls.bot.get_cog("Currency").transfer_money(1, self.user_id, self.price,
+                                                                         CRYPTO_TRADING_COMMISSION, f"{self.crypto} sale")
+            profit = await self.crypto_cls.remove_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
+            async with self.crypto_cls.bot.db.cursor() as cursor:
+                await cursor.execute("UPDATE users SET crypto_profit = crypto_profit + ? WHERE user_id = ?",
+                                     (profit, self.user_id))
+                await self.crypto_cls.bot.db.commit()
+
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.embed.title = "Cancelled ❎"
-        self.embed.set_footer(text="Purchase cancelled")
+        if self.buy_or_sell == "buy":
+            self.embed.set_footer(text="Purchase cancelled")
+        else:
+            self.embed.set_footer(text="Sell cancelled")
         await interaction.response.edit_message(embed=self.embed, view=None)
         self.stop()
 
@@ -116,6 +134,22 @@ class Crypto(commands.Cog):
                 await cursor.execute("INSERT INTO crypto_holdings VALUES (?, ?, ?, ?)",
                                      (user_id, crypto, amount, price_per_unit))
 
+    async def remove_crypto(self, user_id, crypto, amount, price_per_unit) -> float: # returns profit
+        async with self.bot.db.cursor() as cursor:
+            await cursor.execute("SELECT * FROM crypto_holdings WHERE user_id = ? AND coin = ?", (user_id, crypto))
+            a = await cursor.fetchone()
+            _user_id, _crypto, _amount, _avg_price = a
+            new_amount = _amount - amount
+            if new_amount < 0:
+                raise ValueError("Not enough crypto")
+            profit = (price_per_unit - _avg_price) * amount
+            if new_amount == 0:
+                await cursor.execute("DELETE FROM crypto_holdings WHERE user_id = ? AND coin = ?", (user_id, crypto))
+            else:
+                await cursor.execute("UPDATE crypto_holdings SET amount = ? WHERE user_id = ? AND coin = ?",
+                                     (new_amount, user_id, crypto))
+            return profit
+
     async def get_crypto_holds(self, user_id):
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
@@ -134,7 +168,6 @@ class Crypto(commands.Cog):
     @commands.is_owner()
     async def crypto_debug(self, ctx):
         await ctx.send(self.current_crypto_prices)
-
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
     async def crypto(self, ctx: commands.Context):
@@ -166,13 +199,13 @@ class Crypto(commands.Cog):
                            amount="The amount of the crypto you want to buy")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
-        """Buy (fake) crypto (0.1% commission per trade)"""
+        """Buy (fake) crypto (0.05% commission per trade)"""
         wallet, bank = await self.currency.get_balance(ctx.author.id)
         price = int(self.get_current_crypto_price(crypto_name.name) * (1 + CRYPTO_TRADING_COMMISSION) * amount)
         if price > wallet:
             return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name.name}.")
         embed = discord.Embed(
-            title="Review your order", color=discord.Color.blurple(),
+            title="Review your PURCHASE order", color=discord.Color.blurple(),
             description=f"Buying {amount} {crypto_name.name} for "
                         f"{price}{CURRENCY_EMOTE} (including {CRYPTO_TRADING_COMMISSION * 100}% commission)")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
@@ -180,7 +213,29 @@ class Crypto(commands.Cog):
         view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "buy")
         await ctx.reply(embed=embed, view=view)
 
-    #TODO sell command
+    @crypto.command(name="sell", with_app_command=True)
+    @app_commands.describe(crypto_name="The name of the crypto you want to sell",
+                           amount="The amount of the crypto you want to sell")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
+        """Sell your (fake) crypto (0.05% commission per trade)"""
+        crypto_holds = await self.get_crypto_holds(ctx.author.id)
+        if crypto_holds is None:
+            return await ctx.reply("You don't own any crypto.")
+        crypto_holds = dict(crypto_holds)
+        if crypto_name.name not in crypto_holds:
+            return await ctx.reply(f"You don't own any {crypto_name.name}.")
+        if amount > crypto_holds[crypto_name.name]:
+            return await ctx.reply(f"You don't own that much {crypto_name.name}.")
+        price = int(self.get_current_crypto_price(crypto_name.name) * (1 - CRYPTO_TRADING_COMMISSION) * amount)
+        embed = discord.Embed(
+            title="Review your SELL order", color=discord.Color.blurple(),
+            description=f"Selling {amount} {crypto_name.name} for "
+                        f"{price}{CURRENCY_EMOTE} (after {CRYPTO_TRADING_COMMISSION * 100}% commission)")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        embed.set_footer(text="Confirm or cancel your order within 30 seconds")
+        view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "sell")
+        await ctx.reply(embed=embed, view=view)
 
     # show how much crypto user have
     @crypto.command(name="wallet")
