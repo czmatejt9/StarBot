@@ -13,7 +13,7 @@ from .utils import my_math
 logger.name = __name__
 
 CURRENCY_EMOTE = "💰"  # emoji for currency TODO change to custom emoji
-TAX = 0.05  # tax for sending money to another user (5%)
+TAX = 0.03  # tax for sending money to another user (3%)
 DAILY_REWARD = 10000  # daily reward for using daily command
 DAILY_STREAK_BONUS = 2000  # bonus for daily reward if user has a streak
 MONEY_FOR_WORK = 2000, 4000  # range of money for work command
@@ -370,7 +370,7 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="send")
     @app_commands.describe(member="user to send money to", amount="normal number or 'all'")
     async def send(self, ctx: commands.Context, member: discord.Member, amount: str):
-        """Send money to another user (there is a 5% tax)"""
+        """Send money to another user (there is a 3% tax)"""
         wallet, bank = await self.get_balance(ctx.author.id)
         if amount == "all":
             amount = wallet

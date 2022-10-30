@@ -20,7 +20,6 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
                         key=lambda x: x[0])
 available_cryptos = Enum("available_cryptos", {name.split("/")[0] + "(" + symbol[:-3] + ")": i
                                                for i, (symbol, name) in enumerate(crypto_symbols)})
-CRYPTO_TRADING_COMMISSION = 0.0005  # 0.05% commission
 CURRENCY_EMOTE = "💰"
 
 
@@ -61,7 +60,7 @@ class Confirm(discord.ui.View):
             await interaction.response.edit_message(embed=self.embed, view=None)
 
             await self.crypto_cls.bot.get_cog("Currency").transfer_money(1, self.user_id, self.price,
-                                                                         CRYPTO_TRADING_COMMISSION, f"{self.crypto} sale")
+                                                                         0, f"{self.crypto} sale")
             profit = await self.crypto_cls.remove_crypto(self.user_id, self.crypto, self.amount, self.price_per_unit)
             async with self.crypto_cls.bot.db.cursor() as cursor:
                 await cursor.execute("UPDATE users SET crypto_profit = crypto_profit + ? WHERE user_id = ?",
@@ -215,7 +214,7 @@ class Crypto(commands.Cog):
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Buy (fake) crypto (0.05% commission per trade)"""
         wallet, bank = await self.currency.get_balance(ctx.author.id)
-        price = int(self.get_current_crypto_price(crypto_name.name) * (1 + CRYPTO_TRADING_COMMISSION) * amount)
+        price = int(self.get_current_crypto_price(crypto_name.name) * amount)
         if price > wallet:
             return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name.name}.")
         if price == 0:  # minimal price is 1
@@ -223,7 +222,7 @@ class Crypto(commands.Cog):
         embed = discord.Embed(
             title="Review your PURCHASE order", color=discord.Color.blurple(),
             description=f"Buying {amount} {crypto_name.name} for "
-                        f"{price}{CURRENCY_EMOTE} (including {CRYPTO_TRADING_COMMISSION * 100}% commission)")
+                        f"{price}{CURRENCY_EMOTE}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
         view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "buy")
@@ -234,7 +233,7 @@ class Crypto(commands.Cog):
     @app_commands.describe(crypto_name="The name of the crypto you want to sell",
                            amount="The amount of the crypto you want to sell")
     async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
-        """Sell your (fake) crypto (0.05% commission per trade)"""
+        """Sell your (fake) crypto"""
         crypto_holds = await self.get_crypto_holds(ctx.author.id)
         if crypto_holds is None:
             return await ctx.reply("You don't own any crypto.")
@@ -245,11 +244,11 @@ class Crypto(commands.Cog):
             return await ctx.reply(f"You don't own that much {crypto_name.name}.")
 
         non_taxed_price = int(self.get_current_crypto_price(crypto_name.name) * amount)
-        price = int(self.get_current_crypto_price(crypto_name.name) * (1 - CRYPTO_TRADING_COMMISSION) * amount)
+        price = int(self.get_current_crypto_price(crypto_name.name) * amount)
         embed = discord.Embed(
             title="Review your SELL order", color=discord.Color.blurple(),
             description=f"Selling {amount} {crypto_name.name} for "
-                        f"{price}{CURRENCY_EMOTE} (after {CRYPTO_TRADING_COMMISSION * 100}% commission)")
+                        f"{price}{CURRENCY_EMOTE}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
         view = Confirm(embed, crypto_name.name, amount, non_taxed_price, ctx.author.id, self, "sell")
