@@ -21,7 +21,7 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
 available_cryptos = Enum("available_cryptos", {name.split("/")[0] + "(" + symbol[:-3] + ")": i
                                                for i, (symbol, name) in enumerate(crypto_symbols)})
 CURRENCY_EMOTE = "💰"
-
+my_test = Literal[tuple(f"ahoj{str(i)}" for i in range(10))]
 
 def get_latest_bar(alpaca: REST, symbol):
     """
@@ -178,9 +178,10 @@ class Crypto(commands.Cog):
             c_time, close = get_latest_bar(alpaca, symbol)
             self.current_crypto_prices[name.split("/")[0] + "(" + symbol[:-3] + ")"] = close
 # #######################################TASKS##############################################
-    @commands.command(name="crypto_debug", hidden=True)
+    @commands.hybrid_command(name="crypto_debug", hidden=True)
     @commands.is_owner()
-    async def crypto_debug(self, ctx):
+    async def crypto_debug(self, ctx, test_param: my_test):
+        await ctx.send(test_param)
         await ctx.send(self.current_crypto_prices)
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
