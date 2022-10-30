@@ -180,6 +180,7 @@ class Crypto(commands.Cog):
 # #######################################TASKS##############################################
     @commands.hybrid_command(name="crypto_debug", hidden=True)
     @commands.is_owner()
+    @app_commands.guilds(discord.Object(MY_GUILD_ID))
     async def crypto_debug(self, ctx, test_param: my_test):
         await ctx.send(test_param)
         await ctx.send(self.current_crypto_prices)
