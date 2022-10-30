@@ -18,7 +18,8 @@ crypto_symbols = alpaca.list_assets(status='active', asset_class='crypto')
 crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in crypto_symbols
                         if asset.tradable and "/USDT" not in asset.symbol and "/USD" in asset.symbol],
                         key=lambda x: x[0])
-available_cryptos = Literal[tuple(name.split("/")[0] + "(" + symbol[:-3] + ")" for symbol, name in crypto_symbols)]
+my_list = [name.split("/")[0] + "(" + symbol[:-3] + ")" for symbol, name in crypto_symbols]
+available_cryptos = Literal[tuple(my_list)]
 CURRENCY_EMOTE = "💰"
 
 
