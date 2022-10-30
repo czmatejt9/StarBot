@@ -156,7 +156,7 @@ class Crypto(commands.Cog):
                 await cursor.execute("INSERT INTO crypto_holdings VALUES (?, ?, ?, ?)",
                                      (user_id, crypto, amount, price_per_unit))
 
-    async def remove_crypto(self, user_id, crypto, amount, price_per_unit) -> float: # returns profit
+    async def remove_crypto(self, user_id, crypto, amount, price_per_unit) -> float:  # returns profit
         async with self.bot.db.cursor() as cursor:
             await cursor.execute("SELECT * FROM crypto_holdings WHERE user_id = ? AND coin = ?", (user_id, crypto))
             a = await cursor.fetchone()
@@ -220,7 +220,7 @@ class Crypto(commands.Cog):
     @crypto.command(name="buy", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to buy",
                            amount="The amount of the crypto you want to buy")
-    async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
+    async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float, quick_buy: bool = False):
         """Buy (fake) crypto"""
         if ctx.author.id in PENDING_CONFIRMATIONS:
             await ctx.reply("You already have a pending confirmation. Please confirm or deny that first.")
@@ -235,20 +235,25 @@ class Crypto(commands.Cog):
             return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name}.")
         if price == 0:  # minimal price is 1
             price = 1
-        embed = discord.Embed(
-            title="Review your PURCHASE order", color=discord.Color.blurple(),
-            description=f"Buying {amount} {crypto_name} for "
-                        f"{price}{CURRENCY_EMOTE}")
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Confirm or cancel your order within 30 seconds")
-        view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "buy")
-        msg = await ctx.reply(embed=embed, view=view)
-        view.message = msg
+        if not quick_buy:
+            embed = discord.Embed(
+                title="Review your PURCHASE order", color=discord.Color.blurple(),
+                description=f"Buying {amount} {crypto_name} for "
+                            f"{price}{CURRENCY_EMOTE}")
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+            embed.set_footer(text="Confirm or cancel your order within 30 seconds")
+            view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "buy")
+            msg = await ctx.reply(embed=embed, view=view)
+            view.message = msg
+        else:
+            await self.bot.get_cog("Currency").transfer_money(ctx.author.id, 1, price, 0, f"{crypto_name} purchase")
+            await self.give_crypto(ctx.author.id, crypto_name, amount, price / amount)
+            await ctx.reply(f"Successfully bought {amount} {crypto_name} for {price}{CURRENCY_EMOTE}")
 
     @crypto.command(name="sell", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to sell",
                            amount="The amount of the crypto you want to sell")
-    async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
+    async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float, quick_sell: bool = False):
         """Sell your (fake) crypto"""
         if ctx.author.id in PENDING_CONFIRMATIONS:
             await ctx.reply("You already have a pending confirmation. Please confirm or deny that first.")
@@ -266,15 +271,24 @@ class Crypto(commands.Cog):
             return await ctx.reply(f"You don't own that much {crypto_name}.")
 
         price = int(self.get_current_crypto_price(crypto_name) * amount)
-        embed = discord.Embed(
-            title="Review your SELL order", color=discord.Color.blurple(),
-            description=f"Selling {amount} {crypto_name} for "
-                        f"{price}{CURRENCY_EMOTE}")
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
-        embed.set_footer(text="Confirm or cancel your order within 30 seconds")
-        view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "sell")
-        msg = await ctx.reply(embed=embed, view=view)
-        view.message = msg
+        if not quick_sell:
+            embed = discord.Embed(
+                title="Review your SELL order", color=discord.Color.blurple(),
+                description=f"Selling {amount} {crypto_name} for "
+                            f"{price}{CURRENCY_EMOTE}")
+            embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+            embed.set_footer(text="Confirm or cancel your order within 30 seconds")
+            view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "sell")
+            msg = await ctx.reply(embed=embed, view=view)
+            view.message = msg
+        else:
+            await self.bot.get_cog("Currency").transfer_money(1, ctx.author.id, price, 0, f"{self.crypto} sale")
+            profit = await self.remove_crypto(ctx.author.id, crypto_name, amount, price / amount)
+            async with self.bot.db.cursor() as cursor:
+                await cursor.execute("UPDATE users SET crypto_profit = crypto_profit + ? WHERE user_id = ?",
+                                     (profit, ctx.author.id))
+                await self.bot.db.commit()
+            await ctx.reply(f"Successfully sold {amount} {crypto_name} for {price}{CURRENCY_EMOTE}")
 
     # show how much crypto user have
     @crypto.command(name="wallet")
