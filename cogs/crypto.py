@@ -214,7 +214,7 @@ class Crypto(commands.Cog):
                            amount="The amount of the crypto you want to buy")
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Buy (fake) crypto (0.05% commission per trade)"""
-        await ctx.send(crypto_name, available_cryptos)
+        await ctx.send(f"{crypto_name} {available_cryptos}")
         wallet, bank = await self.currency.get_balance(ctx.author.id)
         price = int(self.get_current_crypto_price(crypto_name) * amount)
         if price > wallet:
