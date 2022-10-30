@@ -177,6 +177,7 @@ class Crypto(commands.Cog):
             c_time, close = get_latest_bar(alpaca, symbol)
             self.current_crypto_prices[name.split("/")[0] + "(" + symbol[:-3] + ")"] = close
 # #######################################TASKS##############################################
+
     @commands.command(name="crypto_debug", hidden=True)
     @commands.is_owner()
     async def crypto_debug(self, ctx):
