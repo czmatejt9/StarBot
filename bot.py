@@ -107,6 +107,9 @@ class StarCityBot(commands.Bot):
             await self.log_to_channel(f"Failed to load cog {each}")
         await self.log_to_channel(f"Started running as {self.user}")
 
+    async def on_message(self, message: discord.Message) -> None:
+        await self.process_commands(message)
+
     async def get_prefix(self, message: discord.Message):
         """gets prefix for current guild from db"""
         if message.guild is None:
