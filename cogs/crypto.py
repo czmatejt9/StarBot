@@ -21,6 +21,7 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
 my_list = [name.split("/")[0] + "(" + symbol[:-3] + ")" for symbol, name in crypto_symbols]
 available_cryptos = Literal[tuple(my_list)]
 CURRENCY_EMOTE = "💰"
+PENDING_CONFIRMATIONS = []
 
 
 def get_latest_bar(alpaca: REST, symbol):
@@ -44,6 +45,8 @@ class Confirm(discord.ui.View):
         self.crypto_cls = crypto_cls
         self.buy_or_sell = buy_or_sell
         self.message = None
+        global PENDING_CONFIRMATIONS
+        PENDING_CONFIRMATIONS.append(user_id)
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -67,6 +70,8 @@ class Confirm(discord.ui.View):
                                      (profit, self.user_id))
                 await self.crypto_cls.bot.db.commit()
 
+        global PENDING_CONFIRMATIONS
+        PENDING_CONFIRMATIONS.remove(self.user_id)
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
@@ -77,6 +82,9 @@ class Confirm(discord.ui.View):
         else:
             self.embed.set_footer(text="Sell cancelled")
         await interaction.response.edit_message(embed=self.embed, view=None)
+
+        global PENDING_CONFIRMATIONS
+        PENDING_CONFIRMATIONS.remove(self.user_id)
         self.stop()
 
     async def on_timeout(self):
@@ -214,6 +222,10 @@ class Crypto(commands.Cog):
                            amount="The amount of the crypto you want to buy")
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Buy (fake) crypto"""
+        if ctx.author.id in PENDING_CONFIRMATIONS:
+            await ctx.reply("You already have a pending confirmation. Please confirm or deny that first.")
+            return
+
         if isinstance(crypto_name, int):
             crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
 
@@ -238,6 +250,9 @@ class Crypto(commands.Cog):
                            amount="The amount of the crypto you want to sell")
     async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Sell your (fake) crypto"""
+        if ctx.author.id in PENDING_CONFIRMATIONS:
+            await ctx.reply("You already have a pending confirmation. Please confirm or deny that first.")
+            return
         if isinstance(crypto_name, int):
             crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
 
