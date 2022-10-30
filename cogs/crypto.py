@@ -94,6 +94,8 @@ class Confirm(discord.ui.View):
         else:
             self.embed.set_footer(text="Sell timed out")
         await self.message.edit(embed=self.embed, view=None)
+        global PENDING_CONFIRMATIONS
+        PENDING_CONFIRMATIONS.remove(self.user_id)
         self.stop()
 
     async def interaction_check(self, interaction: discord.Interaction):
@@ -211,6 +213,9 @@ class Crypto(commands.Cog):
     @app_commands.describe(crypto_name="The name of the crypto you want to get the price of")
     async def crypto_price(self, ctx: commands.Context, *, crypto_name: available_cryptos):
         """Get the current price of a crypto"""
+        if isinstance(crypto_name, int):
+            crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
+
         embed = discord.Embed(title=f"Current {crypto_name} price", color=discord.Color.blurple(),
                               description=f"${self.get_current_crypto_price(crypto_name): .5f}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
@@ -225,7 +230,6 @@ class Crypto(commands.Cog):
         if ctx.author.id in PENDING_CONFIRMATIONS:
             await ctx.reply("You already have a pending confirmation. Please confirm or deny that first.")
             return
-
         if isinstance(crypto_name, int):
             crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
 
@@ -314,6 +318,8 @@ class Crypto(commands.Cog):
     async def crypto_graph(self, ctx: commands.Context, crypto_name: available_cryptos,
                            time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
         """Get the graph of a crypto"""
+        if isinstance(crypto_name, int):
+            crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
         file = self.generate_crypto_graph(crypto_name, time_frame)
         file = discord.File(f"{HOME_PATH}/{file}", filename="graph.png")
         await ctx.reply(file=file)
