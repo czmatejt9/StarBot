@@ -177,11 +177,9 @@ class Crypto(commands.Cog):
             c_time, close = get_latest_bar(alpaca, symbol)
             self.current_crypto_prices[name.split("/")[0] + "(" + symbol[:-3] + ")"] = close
 # #######################################TASKS##############################################
-    @commands.hybrid_command(name="crypto_debug", hidden=True)
+    @commands.command(name="crypto_debug", hidden=True)
     @commands.is_owner()
-    @app_commands.guilds(discord.Object(MY_GUILD_ID))
-    async def crypto_debug(self, ctx, test_param: my_test):
-        await ctx.send(test_param)
+    async def crypto_debug(self, ctx):
         await ctx.send(self.current_crypto_prices)
 
     @commands.hybrid_group(name="crypto", invoke_without_command=False, with_app_command=True)
