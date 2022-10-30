@@ -18,10 +18,9 @@ crypto_symbols = alpaca.list_assets(status='active', asset_class='crypto')
 crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset in crypto_symbols
                         if asset.tradable and "/USDT" not in asset.symbol and "/USD" in asset.symbol],
                         key=lambda x: x[0])
-available_cryptos = Enum("available_cryptos", {name.split("/")[0] + "(" + symbol[:-3] + ")": i
-                                               for i, (symbol, name) in enumerate(crypto_symbols)})
+available_cryptos = Literal[tuple(name.split("/")[0] + "(" + symbol[:-3] + ")" for symbol, name in crypto_symbols)]
 CURRENCY_EMOTE = "💰"
-my_test = Literal[tuple(f"ahoj{str(i)}" for i in range(10))]
+
 
 def get_latest_bar(alpaca: REST, symbol):
     """
@@ -204,8 +203,8 @@ class Crypto(commands.Cog):
     @app_commands.describe(crypto_name="The name of the crypto you want to get the price of")
     async def crypto_price(self, ctx: commands.Context, *, crypto_name: available_cryptos):
         """Get the current price of a crypto"""
-        embed = discord.Embed(title=f"Current {crypto_name.name} price", color=discord.Color.blurple(),
-                              description=f"${self.get_current_crypto_price(crypto_name.name): .5f}")
+        embed = discord.Embed(title=f"Current {crypto_name} price", color=discord.Color.blurple(),
+                              description=f"${self.get_current_crypto_price(crypto_name): .5f}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.reply(embed=embed)
@@ -216,18 +215,18 @@ class Crypto(commands.Cog):
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Buy (fake) crypto (0.05% commission per trade)"""
         wallet, bank = await self.currency.get_balance(ctx.author.id)
-        price = int(self.get_current_crypto_price(crypto_name.name) * amount)
+        price = int(self.get_current_crypto_price(crypto_name) * amount)
         if price > wallet:
-            return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name.name}.")
+            return await ctx.reply(f"You don't have enough money in your wallet to buy this amount of {crypto_name}.")
         if price == 0:  # minimal price is 1
             price = 1
         embed = discord.Embed(
             title="Review your PURCHASE order", color=discord.Color.blurple(),
-            description=f"Buying {amount} {crypto_name.name} for "
+            description=f"Buying {amount} {crypto_name} for "
                         f"{price}{CURRENCY_EMOTE}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
-        view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "buy")
+        view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "buy")
         msg = await ctx.reply(embed=embed, view=view)
         view.message = msg
 
@@ -240,19 +239,19 @@ class Crypto(commands.Cog):
         if crypto_holds is None:
             return await ctx.reply("You don't own any crypto.")
         crypto_holds = dict(crypto_holds)
-        if crypto_name.name not in crypto_holds:
-            return await ctx.reply(f"You don't own any {crypto_name.name}.")
-        if amount > crypto_holds[crypto_name.name]:
-            return await ctx.reply(f"You don't own that much {crypto_name.name}.")
+        if crypto_name not in crypto_holds:
+            return await ctx.reply(f"You don't own any {crypto_name}.")
+        if amount > crypto_holds[crypto_name]:
+            return await ctx.reply(f"You don't own that much {crypto_name}.")
 
-        price = int(self.get_current_crypto_price(crypto_name.name) * amount)
+        price = int(self.get_current_crypto_price(crypto_name) * amount)
         embed = discord.Embed(
             title="Review your SELL order", color=discord.Color.blurple(),
-            description=f"Selling {amount} {crypto_name.name} for "
+            description=f"Selling {amount} {crypto_name} for "
                         f"{price}{CURRENCY_EMOTE}")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Confirm or cancel your order within 30 seconds")
-        view = Confirm(embed, crypto_name.name, amount, price, ctx.author.id, self, "sell")
+        view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "sell")
         msg = await ctx.reply(embed=embed, view=view)
         view.message = msg
 
@@ -280,7 +279,7 @@ class Crypto(commands.Cog):
     async def crypto_graph(self, ctx: commands.Context, crypto_name: available_cryptos,
                            time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
         """Get the graph of a crypto"""
-        file = self.generate_crypto_graph(crypto_name.name, time_frame)
+        file = self.generate_crypto_graph(crypto_name, time_frame)
         file = discord.File(f"{HOME_PATH}/{file}", filename="graph.png")
         await ctx.reply(file=file)
 
