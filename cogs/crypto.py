@@ -213,8 +213,10 @@ class Crypto(commands.Cog):
     @app_commands.describe(crypto_name="The name of the crypto you want to buy",
                            amount="The amount of the crypto you want to buy")
     async def crypto_buy(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
-        """Buy (fake) crypto (0.05% commission per trade)"""
-        await ctx.send(f"{crypto_name} {available_cryptos}")
+        """Buy (fake) crypto"""
+        if isinstance(crypto_name, int):
+            crypto_name = crypto_symbols[crypto_name][1]
+
         wallet, bank = await self.currency.get_balance(ctx.author.id)
         price = int(self.get_current_crypto_price(crypto_name) * amount)
         if price > wallet:
@@ -236,6 +238,9 @@ class Crypto(commands.Cog):
                            amount="The amount of the crypto you want to sell")
     async def crypto_sell(self, ctx: commands.Context, crypto_name: available_cryptos, amount: float):
         """Sell your (fake) crypto"""
+        if isinstance(crypto_name, int):
+            crypto_name = crypto_symbols[crypto_name][1]
+
         crypto_holds = await self.get_crypto_holds(ctx.author.id)
         if crypto_holds is None:
             return await ctx.reply("You don't own any crypto.")
