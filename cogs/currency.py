@@ -431,7 +431,7 @@ class Currency(commands.Cog):
         amount = int((DAILY_REWARD + daily_streak * DAILY_STREAK_BONUS)*(1 + daily_streak/50))
         await self.transfer_money(CENTRAL_BANK_ID, ctx.author.id, amount, 0, "daily reward")
         embed = discord.Embed(title="Daily reward", color=discord.Color.gold(),
-                              description=f"You got {amount}!"
+                              description=f"You got {amount}{CURRENCY_EMOTE}!"
                                           f"\nYour daily streak is now {daily_streak + 1}!")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
