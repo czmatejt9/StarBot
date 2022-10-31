@@ -199,10 +199,10 @@ class Crypto(commands.Cog):
         """Crypto commands"""
         pass
 
-    @crypto.command(name="prices", with_app_command=True)
+    # invoke the following with crypto price with no argument
     async def crypto_prices(self, ctx: commands.Context):
         """Get the current price of all cryptos"""
-        embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple())
+        embed = discord.Embed(title="Current crypto Prices", color=discord.Color.blurple(), timestamp=discord.utils.utcnow())
         for name_s, price in self.current_crypto_prices.items():
             embed.add_field(name=f"{name_s}", value=f"${price: .2f}", inline=False)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
@@ -211,13 +211,17 @@ class Crypto(commands.Cog):
 
     @crypto.command(name="price", with_app_command=True)
     @app_commands.describe(crypto_name="The name of the crypto you want to get the price of")
-    async def crypto_price(self, ctx: commands.Context, *, crypto_name: available_cryptos):
+    async def crypto_price(self, ctx: commands.Context, *, crypto_name: Optional[available_cryptos]):
         """Get the current price of a crypto"""
+        if crypto_name is None:
+            await self.crypto_prices(ctx)
+            return
+
         if isinstance(crypto_name, int):
             crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
 
         embed = discord.Embed(title=f"Current {crypto_name} price", color=discord.Color.blurple(),
-                              description=f"${self.get_current_crypto_price(crypto_name): .5f}")
+                              description=f"${self.get_current_crypto_price(crypto_name): .5f}", timestamp=discord.utils.utcnow())
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Crypto prices are updated every 5 minutes. Data provided by Alpaca.")
         await ctx.reply(embed=embed)
@@ -242,8 +246,9 @@ class Crypto(commands.Cog):
         if not quick_buy:
             embed = discord.Embed(
                 title="Review your PURCHASE order", color=discord.Color.blurple(),
-                description=f"Buying {amount} {crypto_name} for "
-                            f"{price}{CURRENCY_EMOTE}")
+                description=f"Buying {amount} {crypto_name} for {price}{CURRENCY_EMOTE}",
+                timestamp=discord.utils.utcnow()
+            )
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
             embed.set_footer(text="Confirm or cancel your order within 30 seconds")
             view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "buy")
@@ -278,8 +283,9 @@ class Crypto(commands.Cog):
         if not quick_sell:
             embed = discord.Embed(
                 title="Review your SELL order", color=discord.Color.blurple(),
-                description=f"Selling {amount} {crypto_name} for "
-                            f"{price}{CURRENCY_EMOTE}")
+                description=f"Selling {amount} {crypto_name} for {price}{CURRENCY_EMOTE}",
+                timestamp=discord.utils.utcnow()
+            )
             embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
             embed.set_footer(text="Confirm or cancel your order within 30 seconds")
             view = Confirm(embed, crypto_name, amount, price, ctx.author.id, self, "sell")
@@ -302,7 +308,7 @@ class Crypto(commands.Cog):
         if member is None:
             member = ctx.author
 
-        embed = discord.Embed(title=f"{member.name}'s crypto wallet")
+        embed = discord.Embed(title=f"{member.name}'s crypto wallet", timestamp=discord.utils.utcnow())
         if crypto_holds := await self.get_crypto_holds(member.id):
             crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
             for coin, amount in crypto_holds:
