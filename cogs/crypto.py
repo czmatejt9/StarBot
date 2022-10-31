@@ -308,7 +308,14 @@ class Crypto(commands.Cog):
         if member is None:
             member = ctx.author
 
-        embed = discord.Embed(title=f"{member.name}'s crypto wallet", timestamp=discord.utils.utcnow())
+        # fetch crypto profit from db
+        async with self.bot.db.cursor() as cursor:
+            await cursor.execute("SELECT crypto_profit FROM users WHERE user_id = ?", (member.id,))
+            crypto_profit = await cursor.fetchone()
+            crypto_profit = 0 if crypto_profit is None else crypto_profit[0]
+
+        embed = discord.Embed(title=f"{member.name}'s crypto wallet", description=f"Lifetime profit: {crypto_profit}{CURRENCY_EMOTE}",
+                              color=discord.Color.blurple(), timestamp=discord.utils.utcnow())
         if crypto_holds := await self.get_crypto_holds(member.id):
             crypto_holds = sorted(crypto_holds, key=lambda x: x[0])
             for coin, amount in crypto_holds:
