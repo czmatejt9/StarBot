@@ -8,7 +8,7 @@ class ReactionRoles(commands.Cog):
   def __init__(self, bot):
     self.bot: StarCityBot = bot
 
-  @commands.command()
+  @commands.hybrid_command(name="reactionrole", aliases=["rr"])
   async def reaction_roles(self, ctx: commands.Context, message_id: int, emoji: str, role: discord.Role):
     """Adds a reaction role to a message. Must have admin permissions."""
     guild: discord.Guild = self.bot.get_guild(MY_GUILD_ID)
