@@ -149,7 +149,14 @@ class Currency(commands.Cog):
                 return "You don't have enough money"
             await self.transfer_money(user_id, CENTRAL_BANK_ID if item != "lotto ticket" else LOTTO_BANK_ID,
                                       price * amount, 0, f"item purchase ({item})")
-            await cursor.execute("INSERT INTO user_items VALUES (?, ?, ?)", (user_id, item_id, amount))
+            await cursor.execute("SELECT amount FROM user_items WHERE user_id = ? AND item_id = ?", (user_id, item_id))
+            user_item_amount = await cursor.fetchone()
+            user_item_amount = user_item_amount[0] if user_item_amount is not None else 0
+            if user_item_amount == 0:
+                await cursor.execute("INSERT INTO user_items VALUES (?, ?, ?)", (user_id, item_id, amount))
+            else:
+                await cursor.execute("UPDATE user_items SET amount = amount + ? WHERE user_id = ? AND item_id = ?",
+                                     (amount, user_id, item_id))
             await self.bot.db.commit()
         return f"You bought {amount} {item} for {price * amount}{CURRENCY_EMOTE}"
 
@@ -288,7 +295,7 @@ class Currency(commands.Cog):
 
         prizes: list = await self.pay_prizes(winners, amount_to_be_paid)
         embed = discord.Embed(title="Lotto results", description=f"Winning numbers: {winning_numbers}", color=0x00ff00,
-                              timestamp=datetime.utcnow())
+                              timestamp=discord.utils.utcnow())
         winner = ""
         for user_id, prize, correct_numbers in prizes:
             msg = ""
@@ -551,7 +558,13 @@ class Currency(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
-    # TODO inventory commands
+    @commands.hybrid_command(name="inventory")
+    @app_commands.describe(member="user to check inventory of")
+    async def inventory(self, ctx: commands.Context, member: Union[discord.User, discord.Member] = None):
+        if member is None:
+            member = ctx.author
+        inventory = await self.get_inventory(member.id)
+
 
     @commands.hybrid_command(name="shop")
     async def shop(self, ctx: commands.Context):
