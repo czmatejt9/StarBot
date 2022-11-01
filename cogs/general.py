@@ -1,15 +1,18 @@
+import random
 from datetime import datetime
 import aiosqlite
 import pytz
 import discord
 from discord.ext import commands
-from bot import StarCityBot, DEFAULT_PREFIX
+from bot import StarCityBot, DEFAULT_PREFIX, HOME_PATH
 
 
 class General(commands.Cog):
     """Some basic fun commands that don't fit into other categories"""
     def __init__(self, bot):
         self.bot: StarCityBot = bot
+        with open(f'{HOME_PATH}/assets/smurf.txt', 'r', encoding='utf-8') as f:
+            self.smurf_quotes = f.read().split('\n')  # TODO move to database
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -41,7 +44,8 @@ class General(commands.Cog):
     @commands.hybrid_command(name="smurf")
     async def tip(self, ctx: commands.Context):
         """Sends daily tip"""
-        await ctx.send("Coming soon!", ephemeral=True)  # TODO
+        quote = random.choice(self.smurf_quotes)
+        await ctx.reply(quote)
 
     @commands.hybrid_command(name="time")
     async def time(self, ctx: commands.Context):
