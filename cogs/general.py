@@ -4,18 +4,15 @@ import aiosqlite
 import pytz
 import discord
 from discord.ext import commands
-from discord import app_commands
-from bot import StarCityBot, MY_GUILD_ID, mybot, DEFAULT_PREFIX
-
-
-def coinflip():
-    return random.randint(0, 1)
+from bot import StarCityBot, DEFAULT_PREFIX, HOME_PATH
 
 
 class General(commands.Cog):
     """Some basic fun commands that don't fit into other categories"""
     def __init__(self, bot):
         self.bot: StarCityBot = bot
+        with open(f'{HOME_PATH}/assets/smurf.txt', 'r', encoding='utf-8') as f:
+            self.smurf_quotes = f.read().split('\n')  # TODO move to database
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -24,27 +21,7 @@ class General(commands.Cog):
             await member.create_dm()
         await member.dm_channel.send(f"Welcome to {member.guild.name}")
 
-    @mybot.hybrid_group(fallbakck="get", pass_context=True, with_app_command=True)
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def random(self, ctx: commands.Context):
-        """Some random generators"""
-        await ctx.send("Use random + name of the subcommand")
-
-    @random.command(name="number")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    @app_commands.describe(lowest="min value", highest="max value")
-    async def number(self, ctx: commands.Context, lowest: int, highest: int):
-        """Returns an integer between specified values"""
-        await ctx.send(f"The random number from `{lowest} to {highest}` is {random.randint(lowest, highest)}!")
-
-    @random.command(name="float")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def float(self, ctx: commands.Context):
-        """Returns random float between 0 and 1"""
-        await ctx.send(f"The random number between `0 and 1` is {random.uniform(0, 1)}!")
-
     @commands.hybrid_command(name="hi", aliases=["hello"])
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def hi(self, ctx: commands.Context):
         """Greets you and show prefix for current server"""
         async with self.bot.db.cursor() as cursor:
@@ -55,34 +32,22 @@ class General(commands.Cog):
         await ctx.send(f"Hi {ctx.author.name}! Prefix for this server is `{prefix}`")
 
     @commands.hybrid_command(name="ping")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def ping(self, ctx: commands.Context):
         """Shows current ping"""
         await ctx.send(f"Pong! {round(self.bot.latency * 1000)}ms")
 
     @commands.hybrid_command(name="secret")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def secret(self, ctx: commands.Context):
         """Sends ephemeral message"""
         await ctx.send("Shh! Only you can see this", ephemeral=True)
 
     @commands.hybrid_command(name="smurf")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def tip(self, ctx: commands.Context):
         """Sends daily tip"""
-        await ctx.send("Coming soon!", ephemeral=True)  # TODO
-
-    @commands.hybrid_command(name="coinflip")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def flip_a_coin(self, ctx: commands.Context):
-        """Flips a coin"""
-        if coinflip():
-            await ctx.send("Heads!")
-            return
-        await ctx.send("Tails!")
+        quote = random.choice(self.smurf_quotes)
+        await ctx.reply(quote)
 
     @commands.hybrid_command(name="time")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def time(self, ctx: commands.Context):
         """Shows current times around the world."""
         europe_time = datetime.now(pytz.timezone("Europe/Berlin"))

@@ -1,14 +1,20 @@
 import logging
 import logging.handlers
+import random
 import os
 import aiosqlite
 import discord
 from discord.ext import commands
 import config
+from cogs.utils import formatters
 
 TOKEN = config.DISCORD_TOKEN
 MY_GUILD_ID = config.MY_GUILD_ID
 LOG_CHANNEL_ID = config.LOG_CHANNEL_ID
+GAMBLE_RANDOM = random.Random(config.GAMBLE_SEED)
+ALPACA_BASE_URL = config.ALPACA_BASE_URL
+ALPACA_KEY_ID = config.ALPACA_KEY_ID
+ALPACA_SECRET_KEY = config.ALPACA_SECRET_KEY
 DEFAULT_PREFIX = "s!"
 HOME_PATH = os.path.dirname(os.path.abspath(__name__))
 DB_NAME = "bot.db"
@@ -17,8 +23,11 @@ EXTENSIONS = (
     "cogs.minigames",
     "cogs.mods",
     "cogs.meta",
+    "cogs.admin",
     "cogs.currency",
+    "cogs.crypto",
 )
+ITEMS = None
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -35,6 +44,7 @@ formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name:<15}: {message
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
 class StarCityBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents(
@@ -50,8 +60,9 @@ class StarCityBot(commands.Bot):
         super().__init__(command_prefix=self.get_prefix, self_bot=False, intents=intents)
         self.synced = False
         self.db: aiosqlite.Connection = None
-        self.id = self.user.id
+        self.id = 0
         self.session_id = None
+        self.alpaca = None
         self.failed_cogs = []
 
     async def setup_db(self):
@@ -72,6 +83,7 @@ class StarCityBot(commands.Bot):
         self.session_id = _id + 1
 
     async def setup_hook(self) -> None:
+        """setting up the bot"""
         # sqlite
         await self.setup_db()
         # loading extensions
@@ -89,10 +101,14 @@ class StarCityBot(commands.Bot):
             self.synced = True
 
     async def on_ready(self):
+        self.id = self.user.id
         logger.info(f"Started running as {self.user}")
         for each in self.failed_cogs:
             await self.log_to_channel(f"Failed to load cog {each}")
         await self.log_to_channel(f"Started running as {self.user}")
+
+    async def on_message(self, message: discord.Message) -> None:
+        await self.process_commands(message)
 
     async def get_prefix(self, message: discord.Message):
         """gets prefix for current guild from db"""
@@ -122,7 +138,8 @@ class StarCityBot(commands.Bot):
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send('Sorry. This command is disabled and cannot be used.')
         elif isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f"Please wait {round(error.retry_after)} seconds before using this command again")
+            time_left = formatters.format_seconds(round(error.retry_after))
+            await ctx.send(f"Please wait {time_left} before using this command again")
         elif isinstance(error, (commands.ArgumentParsingError, commands.MissingRequiredArgument)):
             await ctx.send(str(error))
         elif isinstance(error, commands.CommandNotFound):
@@ -131,10 +148,11 @@ class StarCityBot(commands.Bot):
             logger.exception(f"**{ctx.invoked_with}** {error}")
             await self.log_to_channel(f"**{ctx.invoked_with}** {error}")
 
-    async def log_to_channel(self, msg: str):
+    async def log_to_channel(self, msg: str, embed: discord.Embed = None):
         """sends log info directly to discord channel"""
         channel = self.get_guild(MY_GUILD_ID).get_channel(LOG_CHANNEL_ID)
-        embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
+        if embed is None:
+            embed = discord.Embed(description=msg, timestamp=discord.utils.utcnow())
         await channel.send(embed=embed)
 
 
