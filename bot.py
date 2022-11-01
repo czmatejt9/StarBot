@@ -26,6 +26,7 @@ EXTENSIONS = (
     "cogs.admin",
     "cogs.currency",
     "cogs.crypto",
+    "cogs.reaction_roles"
 )
 ITEMS = None
 
