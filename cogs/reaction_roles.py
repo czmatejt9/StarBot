@@ -44,8 +44,7 @@ class ReactionRoles(commands.Cog):
     if result is not None:
       guild: discord.Guild = self.bot.get_guild(payload.guild_id)
       role: discord.Role = guild.get_role(result[0])
-      if role in payload.member.roles:
-        await payload.member.remove_roles(role)
+      await payload.member.remove_roles(role)
 
 
 
