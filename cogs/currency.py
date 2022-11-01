@@ -580,12 +580,12 @@ class Currency(commands.Cog):
         inventory = await self.get_inventory(member.id)
         description = "" if inventory else "This user has no items!"
         for item_id, amount in inventory:
-            item = self.get_item_name(item_id)
+            item = await self.get_item_name(item_id)
             description += f"{item}: {amount}\n"
 
         embed = discord.Embed(title=f"{member.display_name}'s inventory", color=discord.Color.blurple(),
                               description=description, timestamp=discord.utils.utcnow())
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        embed.set_author(name=member.display_name, icon_url=member.display_avatar)
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="shop")
