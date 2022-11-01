@@ -126,12 +126,26 @@ class Currency(commands.Cog):
             item_id = await cursor.fetchone()
         return item_id[0] if item_id is not None else False
 
+    async def get_item_name(self, item_id: int) -> str:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT name FROM items WHERE item_id = ?", (item_id,))
+            name = await cursor.fetchone()
+        return name[0] if name is not None else False
+
     async def get_all_items(self) -> list:
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("SELECT * FROM items")
             items = await cursor.fetchall()
         return list(items)
+
+    async def get_inventory(self, user_id: int) -> list:
+        async with self.bot.db.cursor() as cursor:
+            cursor: aiosqlite.Cursor
+            await cursor.execute("SELECT item_id, amount FROM user_items WHERE user_id = ?", (user_id,))
+            inventory = await cursor.fetchall()
+        return list(inventory) if inventory is not None else []
 
     async def buy_item(self, user_id: int, item: str, amount: int, can_go_negative: bool = False) -> str:
         await self.ensure_user_exists(user_id)
@@ -558,13 +572,21 @@ class Currency(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(name="inventory")
+    @commands.hybrid_command(name="inventory", aliases=["inv"])
     @app_commands.describe(member="user to check inventory of")
     async def inventory(self, ctx: commands.Context, member: Union[discord.User, discord.Member] = None):
         if member is None:
             member = ctx.author
         inventory = await self.get_inventory(member.id)
+        description = "" if inventory else "This user has no items!"
+        for item_id, amount in inventory:
+            item = self.get_item_name(item_id)
+            description += f"{item}: {amount}\n"
 
+        embed = discord.Embed(title=f"{member.display_name}'s inventory", color=discord.Color.blurple(),
+                              description=description, timestamp=discord.utils.utcnow())
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(name="shop")
     async def shop(self, ctx: commands.Context):
