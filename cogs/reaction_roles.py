@@ -37,11 +37,12 @@ class ReactionRoles(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
-        await self.bot.log_to_channel("Removing role")
         async with self.bot.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
             await cursor.execute("SELECT role_id FROM reaction_roles WHERE message_id = ? AND emoji = ?", (payload.message_id, payload.emoji.name))
             result = await cursor.fetchone()
+
+        await self.bot.log_to_channel(result[0])
         if result is not None:
             guild: discord.Guild = self.bot.get_guild(payload.guild_id)
             role: discord.Role = guild.get_role(result[0])
