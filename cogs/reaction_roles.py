@@ -45,12 +45,8 @@ class ReactionRoles(commands.Cog):
         if result is not None:
             guild: discord.Guild = self.bot.get_guild(payload.guild_id)
             role: discord.Role = guild.get_role(result[0])
-
-            await self.bot.log_to_channel(f"{guild.name} {role.name}")
-            try:
-                await payload.member.remove_roles(role)
-            except Exception as e:
-                await self.bot.log_to_channel(str(e))
+            member: discord.Member = guild.get_member(payload.user_id)
+            await member.remove_roles(role)
 
 
 async def setup(bot: commands.Bot):
