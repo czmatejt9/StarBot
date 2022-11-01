@@ -12,13 +12,14 @@ class ReactionRoles(commands.Cog):
   async def reaction_roles(self, ctx: commands.Context, message_id: int, emoji: str, role: discord.Role):
     """Adds a reaction role to a message. Must have admin permissions."""
     guild: discord.Guild = self.bot.get_guild(MY_GUILD_ID)
-    message: discord.Message = await guild.get_channel("1029452188621222008").fetch_message(message_id)
+    channel: discord.TextChannel = await guild.fetch_channel(1029452188621222008)
+    message: discord.Message = await channel.fetch_message(message_id)
     await message.add_reaction(emoji)
     async with self.bot.db.cursor() as cursor:
-      cursor: aiosqlite.Connection
+      cursor: aiosqlite.Cursor
       await cursor.execute("INSERT INTO reaction_roles (message_id, emoji, role_id) VALUES (?, ?, ?)", (message_id, emoji, role.id))
       await self.bot.db.commit()
-    await ctx.send(f"Successfully added reaction role for this server")
+    await ctx.send("Successfully added reaction role for this server")
 
   def cog_check(self, ctx: commands.Context) -> bool:
     return ctx.author.guild_permissions.administrator
@@ -26,7 +27,7 @@ class ReactionRoles(commands.Cog):
   @commands.Cog.listener()
   async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
     async with self.bot.db.cursor() as cursor:
-      cursor: aiosqlite.Connection
+      cursor: aiosqlite.Cursor
       await cursor.execute("SELECT role_id FROM reaction_roles WHERE message_id = ? AND emoji = ?", (payload.message_id, payload.emoji.name))
       result = await cursor.fetchone()
     if result is not None:
