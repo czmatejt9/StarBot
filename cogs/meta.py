@@ -1,6 +1,26 @@
 import discord
 from discord.ext import commands
 from bot import StarCityBot, MY_GUILD_ID
+FEEDBACK_CHANNEL_ID = 1037423626179313744
+
+
+class FeedbackModal(discord.ui.Modal, title="Feedback"):
+    def __init__(self, bot: StarCityBot, user: discord.User):
+        super().__init__()
+        self.bot = bot
+        self.user = user
+
+    type = discord.ui.TextInput(label="Type of feedback", placeholder="Bug report, suggestion, etc.")
+    feedback = discord.ui.TextInput(placeholder="Your feedback goes here", style=discord.TextStyle.paragraph, label="Feedback")
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        await interaction.response.send_message("Thanks for your feedback!", ephemeral=True)
+        guild: discord.Guild = self.bot.get_guild(MY_GUILD_ID)
+        channel: discord.TextChannel = await guild.fetch_channel(FEEDBACK_CHANNEL_ID)
+        embed = discord.Embed(title=self.type.value, description=self.feedback.value, color=discord.Color.blurple(),
+                              timestamp=discord.utils.utcnow())
+        embed.set_author(name=self.user, icon_url=self.user.display_avatar)
+        await channel.send(embed=embed)
 
 
 class Meta(commands.Cog):
@@ -24,6 +44,11 @@ class Meta(commands.Cog):
         perms.attach_files = True
         perms.add_reactions = True
         await ctx.send(f'<{discord.utils.oauth_url(self.bot.user.id, permissions=perms)}>')
+
+    @commands.hybrid_command(name="feedback")
+    async def feedback(self, ctx: commands.Context):
+        """Invokes a discord modal to send feedback to the bot owner"""
+        await ctx.interaction.response.send_modal(FeedbackModal(self.bot, ctx.author))
 
 
 async def setup(bot: StarCityBot):
