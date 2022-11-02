@@ -347,7 +347,7 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="balance", aliases=["bal"])
     @app_commands.describe(member="user to check balance of, leave blank to check your own balance")
     async def balance(self, ctx: commands.Context, member: Union[discord.Member, discord.User] = None):
-        """Shows your or someone's balance"""
+        """Check your or someone's balance"""
         if member is None:
             member = ctx.author
         wallet, bank = await self.get_balance(member.id)
@@ -582,6 +582,7 @@ class Currency(commands.Cog):
     @commands.hybrid_command(name="inventory", aliases=["inv"])
     @app_commands.describe(member="user to check inventory of")
     async def inventory(self, ctx: commands.Context, member: Union[discord.User, discord.Member] = None):
+        """Check your or someone's inventory"""
         if member is None:
             member = ctx.author
         inventory = await self.get_inventory(member.id)
