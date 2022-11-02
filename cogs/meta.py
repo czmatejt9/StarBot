@@ -48,9 +48,9 @@ class Meta(commands.Cog):
 
     @app_commands.command(name="feedback")  # Note this is only slash command not a hybrid command like the others
     @app_commands.checks.cooldown(1, 60*60*24)
-    async def feedback(self, ctx: commands.Context):
+    async def feedback(self, interaction: discord.Interaction):
         """Invokes a discord modal to send feedback to the bot owner"""
-        await ctx.interaction.response.send_modal(FeedbackModal(self.bot, ctx.author))
+        await interaction.response.send_modal(FeedbackModal(self.bot, interaction.user))
 
 
 async def setup(bot: StarCityBot):
