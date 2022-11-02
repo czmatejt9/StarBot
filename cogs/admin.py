@@ -177,6 +177,19 @@ class Admin(commands.Cog):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
+    @commands.command(hidden=True)
+    async def reload(self, ctx: commands.Context, *, module: str):
+        """Reloads a module."""
+        try:
+            await self.bot.unload_extension(module)
+            os.system("git pull origin master")
+            await asyncio.sleep(3)
+            await self.bot.load_extension(module)
+        except commands.ExtensionError as e:
+            await ctx.send(f'{e.__class__.__name__}: {e}')
+        else:
+            await ctx.send('\N{OK HAND SIGN}')
+
     @commands.command(hidden=True, name="disable")
     async def disable_command(self, ctx: commands.Context, command: str):
         """Disables a command"""
