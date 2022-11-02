@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 from bot import StarCityBot, MY_GUILD_ID
 FEEDBACK_CHANNEL_ID = 1037423626179313744
@@ -45,7 +46,7 @@ class Meta(commands.Cog):
         perms.add_reactions = True
         await ctx.send(f'<{discord.utils.oauth_url(self.bot.user.id, permissions=perms)}>')
 
-    @commands.hybrid_command(name="feedback")
+    @app_commands.command(name="feedback")  # Note this is only slash command not a hybrid command like the others
     async def feedback(self, ctx: commands.Context):
         """Invokes a discord modal to send feedback to the bot owner"""
         await ctx.interaction.response.send_modal(FeedbackModal(self.bot, ctx.author))
