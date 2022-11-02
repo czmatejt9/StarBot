@@ -55,7 +55,7 @@ class Meta(commands.Cog):
 
     @feedback.error
     async def feedback_error(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, app_commands.CommandOnCooldown):
+        if isinstance(error, (app_commands.CommandOnCooldown, app_commands.CheckFailure)):
             await ctx.send("You can only send feedback once a day!", ephemeral=True)
         else:
             logger.exception("Error in feedback command", exc_info=error)
