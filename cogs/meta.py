@@ -1,8 +1,9 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from bot import StarCityBot, MY_GUILD_ID
+from bot import StarCityBot, MY_GUILD_ID, logger
 FEEDBACK_CHANNEL_ID = 1037423626179313744
+logger.name = __name__
 
 
 class FeedbackModal(discord.ui.Modal, title="Feedback"):
@@ -51,6 +52,14 @@ class Meta(commands.Cog):
     async def feedback(self, interaction: discord.Interaction):
         """Invokes a discord modal to send feedback to the bot owner"""
         await interaction.response.send_modal(FeedbackModal(self.bot, interaction.user))
+
+    @feedback.error
+    async def feedback_error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            await ctx.send("You can only send feedback once a day!", ephemeral=True)
+        else:
+            logger.exception("Error in feedback command", exc_info=error)
+            await self.bot.log_to_channel(f"**feedback** {error}")
 
 
 async def setup(bot: StarCityBot):
