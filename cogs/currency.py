@@ -7,7 +7,7 @@ from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
 import random
-from bot import MY_GUILD_ID, StarCityBot, logger, GAMBLE_RANDOM
+from bot import MY_GUILD_ID, StarCityBot, logger, GAMBLE_RANDOM, ITEMS
 from .utils import my_math
 
 logger.name = __name__
@@ -19,8 +19,8 @@ DAILY_STREAK_BONUS = 2000  # bonus for daily reward if user has a streak
 MONEY_FOR_WORK = 2000, 4000  # range of money for work command
 CENTRAL_BANK_ID = 1
 LOTTO_BANK_ID = 2
-ITEMS = Literal["apple", "Spjáťa's bulletproof vest", "lotto ticket"]
-# TODO top priority: add lotto drawing every midnight utc
+ITEMS = Literal[ITEMS]
+ITEM_PROTECTION_FROM_ROBBING_ID = 1
 
 
 class Currency(commands.Cog):
@@ -146,6 +146,10 @@ class Currency(commands.Cog):
             await cursor.execute("SELECT item_id, amount FROM user_items WHERE user_id = ?", (user_id,))
             inventory = await cursor.fetchall()
         return list(inventory) if inventory is not None else []
+
+    async def check_if_robable(self, user_id: int) -> bool:
+        items = await self.get_inventory(user_id)
+        return all(item[0] != ITEM_PROTECTION_FROM_ROBBING_ID for item in items)
 
     async def buy_item(self, user_id: int, item: str, amount: int, can_go_negative: bool = False) -> str:
         await self.ensure_user_exists(user_id)
@@ -509,6 +513,9 @@ class Currency(commands.Cog):
             return await ctx.reply("You can't rob bots!")
         if member.id == ctx.author.id:
             return await ctx.reply("You can't rob yourself!")
+        if not self.check_if_robable(member.id):
+            return await ctx.reply(f"You can't rob that user because he has {self.get_item_name(ITEM_PROTECTION_FROM_ROBBING_ID)}")
+
         victim_wallet, victim_bank = await self.get_balance(member.id)
         if victim_wallet < 100:
             return await ctx.reply("This user doesn't have enough money to rob!")
