@@ -119,7 +119,7 @@ class Crypto(commands.Cog):
 
     def generate_crypto_graph(self, crypto_name: str,  timeframe: str):
         symbol = self.crypto_symbols_dict[crypto_name]
-        str_to_days = {"today": 0, "3days": 2, "1week": 6, "1month": 30, "3months": 90, "6months": 182, "1year": 364}
+        str_to_days = {"today": 0, "3days": 2, "1week": 6, "1month": 30, "3months": 90, "6months": 182, "1year": 364, "3years": 1095}
         days = str_to_days[timeframe]
         timeunit = TimeFrame.Minute if timeframe in {"today"}\
             else TimeFrame.Hour if timeframe in {"3days", "1week"} else TimeFrame.Day
@@ -329,7 +329,7 @@ class Crypto(commands.Cog):
     @crypto.command(name="graph", with_app_command=True)
     @app_commands.describe(crypto_name="The crypto you want to get the graph of", time_frame="The time period of the graph")
     async def crypto_graph(self, ctx: commands.Context, crypto_name: available_cryptos,
-                           time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year"]):
+                           time_frame: Literal["today", "3days", "1week", "1month", "3months", "6months", "1year", "3years"]):
         """Get the graph of a crypto"""
         if isinstance(crypto_name, int):
             crypto_name = crypto_symbols[crypto_name][1].split("/")[0] + "(" + crypto_symbols[crypto_name][0][:-3] + ")"
