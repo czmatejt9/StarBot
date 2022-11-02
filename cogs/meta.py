@@ -46,8 +46,8 @@ class Meta(commands.Cog):
         perms.add_reactions = True
         await ctx.send(f'<{discord.utils.oauth_url(self.bot.user.id, permissions=perms)}>')
 
-    @commands.cooldown(1, 3600, commands.BucketType.user)
     @app_commands.command(name="feedback")  # Note this is only slash command not a hybrid command like the others
+    @app_commands.checks.cooldown(1, 60*60*24)
     async def feedback(self, ctx: commands.Context):
         """Invokes a discord modal to send feedback to the bot owner"""
         await ctx.interaction.response.send_modal(FeedbackModal(self.bot, ctx.author))
