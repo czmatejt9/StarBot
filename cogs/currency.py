@@ -7,7 +7,7 @@ from discord.ext import commands, tasks
 from discord import app_commands
 import aiosqlite
 import random
-from bot import MY_GUILD_ID, StarCityBot, logger, GAMBLE_RANDOM, ITEMS
+from bot import MY_GUILD_ID, StarCityBot, logger, GAMBLE_RANDOM, mybot
 from .utils import my_math
 
 logger.name = __name__
@@ -19,8 +19,8 @@ DAILY_STREAK_BONUS = 2000  # bonus for daily reward if user has a streak
 MONEY_FOR_WORK = 2000, 4000  # range of money for work command
 CENTRAL_BANK_ID = 1
 LOTTO_BANK_ID = 2
-ITEMS = Literal[ITEMS]
 ITEM_PROTECTION_FROM_ROBBING_ID = 1
+ITEMS = Literal["apple", "Spjáťa's bulletproof vest", "lotto ticket"]  # TODO build this from db
 
 
 class Currency(commands.Cog):

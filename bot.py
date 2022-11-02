@@ -28,7 +28,6 @@ EXTENSIONS = (
     "cogs.crypto",
     "cogs.reaction_roles"
 )
-ITEMS = None
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -71,11 +70,6 @@ class StarCityBot(commands.Bot):
         self.db = await aiosqlite.connect(DB_NAME)
         async with self.db.cursor() as cursor:
             cursor: aiosqlite.Cursor
-            await cursor.execute("SELECT name from items")
-            global ITEMS
-            ITEMS = await cursor.fetchall()
-            ITEMS = tuple(item[0] for item in ITEMS)
-
             await cursor.execute("SELECT max(session_id) FROM sessions")
             session_id = await cursor.fetchone()
             await cursor.execute("SELECT session_id, pid FROM sessions WHERE session_id = ?", (session_id[0], ))
