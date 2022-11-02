@@ -54,9 +54,9 @@ class Meta(commands.Cog):
         await interaction.response.send_modal(FeedbackModal(self.bot, interaction.user))
 
     @feedback.error
-    async def feedback_error(self, ctx: commands.Context, error: commands.CommandError):
+    async def feedback_error(self, interaction: discord.Interaction, error: commands.CommandError):
         if isinstance(error, (app_commands.CommandOnCooldown, app_commands.CheckFailure)):
-            await ctx.send("You can only send feedback once a day!", ephemeral=True)
+            await interaction.response.send_message("You can only send feedback once a day!", ephemeral=True)
         else:
             logger.exception("Error in feedback command", exc_info=error)
             await self.bot.log_to_channel(f"**feedback** {error}")
