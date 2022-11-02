@@ -513,7 +513,7 @@ class Currency(commands.Cog):
             return await ctx.reply("You can't rob bots!")
         if member.id == ctx.author.id:
             return await ctx.reply("You can't rob yourself!")
-        if not self.check_if_robable(member.id):
+        if not await self.check_if_robable(member.id):
             return await ctx.reply(f"You can't rob that user because he has {self.get_item_name(ITEM_PROTECTION_FROM_ROBBING_ID)}")
 
         victim_wallet, victim_bank = await self.get_balance(member.id)
