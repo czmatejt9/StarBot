@@ -66,7 +66,8 @@ class Minigames(commands.Cog):
     async def hangman(self, ctx: commands.Context):
         """Starts a game of hangman"""
         hangman_game = hangman.Hangman(ctx.author)
-        embed = discord.Embed(title="Hangman", description="Word: "+" ".join("_" for _ in hangman_game.word), color=0x00ff00)
+        embed = discord.Embed(title="Hangman", description="Word: "+" ".join("_" for _ in hangman_game.word) +
+                                                           f"\nLives left: {hangman_game.lives}", color=0x00ff00)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Click on the buttons to guess the word")
         msg = await ctx.send(embed=embed, view=hangman_game, ephemeral=True)

@@ -23,7 +23,7 @@ class Hangman(discord.ui.View):
         self.word = random.choice(words)
         self.display_word = ["_" for _ in self.word]
         self.guessed_letters = []
-        self.lives = 6
+        self.lives = 7
         super().__init__(timeout=300.0)
         for letter in letters:
             self.add_item(LetterButton(letter))
@@ -36,16 +36,21 @@ class Hangman(discord.ui.View):
             for i, char in enumerate(self.word):
                 if char == letter.lower():
                     self.display_word[i] = letter
-            self.embed.description = "Word: "+" ".join(self.display_word)
             self.embed.set_footer(text=f"You correctly guessed letter {letter}")
         else:
+            self.lives -= 1
             self.embed.set_footer(text=f"Letter {letter} is not in the word")
 
         if self.display_word == list(self.word):
-            self.embed.set_footer(text=f"You won! The word was {self.word}")
+            self.embed.set_footer(text="You WON!")
+            for child in self.children:
+                child.disabled = True
+        if self.lives == 0:
+            self.embed.set_footer(text=f"You LOST! The word was {self.word}")
             for child in self.children:
                 child.disabled = True
 
+        self.embed.description = "Word: " + " ".join(self.display_word) + f"\nLives left: {self.lives}"
         await interaction.response.edit_message(embed=self.embed, view=self)
 
     async def on_timeout(self) -> None:
