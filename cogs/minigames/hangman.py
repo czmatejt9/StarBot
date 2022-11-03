@@ -32,7 +32,7 @@ class Hangman(discord.ui.View):
 
     async def update(self, letter: str, interaction: discord.Interaction) -> None:
         self.guessed_letters.append(letter)
-        if letter in self.word:
+        if letter.lower() in self.word:
             for i, char in enumerate(self.word):
                 if char == letter.lower():
                     self.display_word[i] = letter
