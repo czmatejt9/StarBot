@@ -41,17 +41,22 @@ class Hangman(discord.ui.View):
             self.lives -= 1
             self.embed.set_footer(text=f"Letter {letter} is not in the word")
 
+        stop = False
         if self.display_word == list(self.word):
             self.embed.set_footer(text="You WON!")
             for child in self.children:
                 child.disabled = True
+            stop = True
         if self.lives == 0:
             self.embed.set_footer(text=f"You LOST! The word was {self.word}")
             for child in self.children:
                 child.disabled = True
+            stop = True
 
         self.embed.description = "Word: " + " ".join(self.display_word) + f"\nLives left: {self.lives}"
         await interaction.response.edit_message(embed=self.embed, view=self)
+        if stop:
+            self.stop()
 
     async def on_timeout(self) -> None:
         self.embed.description = " ".join(self.display_word)
