@@ -41,7 +41,7 @@ class Hangman(discord.ui.View):
                 self.display_word += char + " "
                 logger.info(char)
             else:
-                self.display_word += "_ "
+                self.display_word += "- "
                 logger.info("_")
         logger.info(self.display_word)
 
