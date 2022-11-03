@@ -52,7 +52,7 @@ class Hangman(discord.ui.View):
                 child.disabled = True
             stop = True
 
-        self.embed.description = "Word: " + " ".join(self.display_word) + f"\nLives left: {self.lives}"
+        self.embed.description = f"Word: {self.display_word}" + f"\nLives left: {self.lives}"
         await interaction.response.edit_message(embed=self.embed, view=self)
         if stop:
             self.stop()
