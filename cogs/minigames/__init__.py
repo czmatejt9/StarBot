@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from . import tictactoe, gobblet
+from . import tictactoe, gobblet, hangman
 from bot import StarCityBot, MY_GUILD_ID
 
 
@@ -11,7 +11,6 @@ class Minigames(commands.Cog):
         self.bot: StarCityBot = bot
 
     @commands.hybrid_group(pass_context=True, with_app_command=True, invoke_without_command=False)
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def game(self, ctx: commands.Context):
         """Some minigames to play with other users"""
         await ctx.send("Use game + name of the game + opponent")
@@ -52,7 +51,6 @@ class Minigames(commands.Cog):
         prompt.message = msg
 
     @commands.hybrid_command(name="gobblet_rules")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     @commands.guild_only()
     async def gobblet_rules(self, ctx: commands.Context):
         """Sends a link with rules of Gobblet gobblers"""
@@ -62,6 +60,18 @@ class Minigames(commands.Cog):
                        " for opponent, but with that piece covers one of the other 2 pieces which are in the opponent's"
                        " 3 in a row (thus the 3 in a row isn't visible anymore), he DOESN'T lose.\n"
                        "**If after any move there are 3 in a row for both players, the player making the last move loses.**")
+
+    @game.command(name="hangmand")
+    @commands.guild_only()
+    async def hangman(self, ctx: commands.Context):
+        """Starts a game of hangman"""
+        hangman_game = hangman.Hangman(ctx.author)
+        embed = discord.Embed(title="Hangman", description=" ".join(hangman_game.word), color=0x00ff00)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.set_footer(text="Click on the buttons to guess the word")
+        msg = await ctx.send(embed=embed, view=hangman_game)
+        hangman_game.message = msg
+        hangman_game.embed = embed
 
 
 async def setup(bot: StarCityBot):
