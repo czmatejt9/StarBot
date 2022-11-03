@@ -15,7 +15,7 @@ class LetterButton(discord.ui.Button['Hangman']):
 
     async def callback(self, interaction: discord.Interaction):
         self.disabled = True
-        await self.view.update(self.label)
+        await self.view.update(self.label, interaction)
 
 
 class Hangman(discord.ui.View):
@@ -30,7 +30,7 @@ class Hangman(discord.ui.View):
         self.message = None
         self.embed = None
 
-    async def update(self, letter: str):
+    async def update(self, letter: str, interaction: discord.Interaction) -> None:
         self.guessed_letters.append(letter)
         if letter in self.word:
             for i, char in enumerate(self.word):
@@ -46,7 +46,7 @@ class Hangman(discord.ui.View):
             for child in self.children:
                 child.disabled = True
 
-        await self.message.edit(embed=self.embed, view=self)
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
     async def on_timeout(self) -> None:
         self.embed.description = " ".join(self.display_word)
