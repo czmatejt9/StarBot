@@ -61,13 +61,13 @@ class Minigames(commands.Cog):
                        " 3 in a row (thus the 3 in a row isn't visible anymore), he DOESN'T lose.\n"
                        "**If after any move there are 3 in a row for both players, the player making the last move loses.**")
 
-    @game.command(name="hangmand")
+    @game.command(name="hangman")
     @commands.guild_only()
     async def hangman(self, ctx: commands.Context):
         """Starts a game of hangman"""
         hangman_game = hangman.Hangman(ctx.author)
         embed = discord.Embed(title="Hangman", description=" ".join(hangman_game.word), color=0x00ff00)
-        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Click on the buttons to guess the word")
         msg = await ctx.send(embed=embed, view=hangman_game, ephemeral=True)
         hangman_game.message = msg
