@@ -21,7 +21,7 @@ class LetterButton(discord.ui.Button['Hangman']):
 class Hangman(discord.ui.View):
     def __init__(self, author: discord.Member):
         self.word = random.choice(words)
-        self.display_word = ["_" for _ in self.word]
+        self.display_word = ["_"] * len(self.word)
         self.guessed_letters = []
         self.lives = 7
         super().__init__(timeout=300.0)
@@ -48,7 +48,7 @@ class Hangman(discord.ui.View):
                 child.disabled = True
             stop = True
         if self.lives == 0:
-            self.embed.set_footer(text=f"You LOST! The word was {self.word}")
+            self.embed.set_footer(text=f"You LOST! The word was {self.word.upper()}")
             for child in self.children:
                 child.disabled = True
             stop = True
