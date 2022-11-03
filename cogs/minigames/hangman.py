@@ -51,4 +51,7 @@ class Hangman(discord.ui.View):
     async def on_timeout(self) -> None:
         self.embed.description = " ".join(self.display_word)
         self.embed.set_footer(text="You ran out of time!")
+        for child in self.children:
+            child.disabled = True
+        await self.message.edit(embed=self.embed, view=self)
         self.stop()
