@@ -36,7 +36,7 @@ class Hangman(discord.ui.View):
             for i, char in enumerate(self.word):
                 if char == letter.lower():
                     self.display_word[i] = letter
-            self.embed.description = " ".join(self.display_word)
+            self.embed.description = "Word: "+" ".join(self.display_word)
             self.embed.set_footer(text=f"You correctly guessed letter {letter}")
         else:
             self.embed.set_footer(text=f"Letter {letter} is not in the word")
