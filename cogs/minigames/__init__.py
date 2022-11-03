@@ -69,7 +69,7 @@ class Minigames(commands.Cog):
         embed = discord.Embed(title="Hangman", description=" ".join(hangman_game.word), color=0x00ff00)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url)
         embed.set_footer(text="Click on the buttons to guess the word")
-        msg = await ctx.send(embed=embed, view=hangman_game)
+        msg = await ctx.send(embed=embed, view=hangman_game, ephemeral=True)
         hangman_game.message = msg
         hangman_game.embed = embed
 
