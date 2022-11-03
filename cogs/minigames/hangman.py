@@ -1,8 +1,9 @@
 import random
 import discord
 from discord.ext import commands
-from bot import StarCityBot, MY_GUILD_ID, HOME_PATH
+from bot import StarCityBot, MY_GUILD_ID, HOME_PATH, logger
 
+logger.name = __name__
 with open(f"{HOME_PATH}/assets/words.txt", "r") as f:
     words = f.read().split("\n")
 words = [word.lower() for word in words if "z" not in word and len(word) > 3]
@@ -30,14 +31,19 @@ class Hangman(discord.ui.View):
         self.message = None
         self.embed = None
 
+
+    # TODO FIX THIS
     async def update(self, letter: str, interaction: discord.Interaction) -> None:
         self.guessed_letters.append(letter.lower())
         self.display_word = ""
         for char in self.word:
             if char in self.guessed_letters:
                 self.display_word += char + " "
+                logger.info(char)
             else:
                 self.display_word += "_ "
+                logger.info("_")
+        logger.info(self.display_word)
 
         if letter.lower() in self.word:
             self.embed.set_footer(text=f"You correctly guessed letter {letter}")
