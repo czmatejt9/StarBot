@@ -21,7 +21,7 @@ class LetterButton(discord.ui.Button['Hangman']):
 class Hangman(discord.ui.View):
     def __init__(self, author: discord.Member):
         self.word = str(random.choice(words))
-        self.display_word = ["_"] * len(self.word)
+        self.display_word = "_ " * len(self.word)
         self.guessed_letters = []
         self.lives = 7
         super().__init__(timeout=300.0)
@@ -31,18 +31,18 @@ class Hangman(discord.ui.View):
         self.embed = None
 
     async def update(self, letter: str, interaction: discord.Interaction) -> None:
-        self.guessed_letters.append(letter)
+        self.guessed_letters.append(letter.lower())
+        self.display_word = ""
         if letter.lower() in self.word:
-            for i, char in enumerate(self.word):
-                if char == letter.lower():
-                    self.display_word[i] = letter
+            for char in self.word:
+                self.display_word += f"{char} " if char in self.guessed_letters else "_ "
             self.embed.set_footer(text=f"You correctly guessed letter {letter}")
         else:
             self.lives -= 1
             self.embed.set_footer(text=f"Letter {letter} is not in the word")
 
         stop = False
-        if self.display_word == list(self.word):
+        if "_" not in self.display_word:
             self.embed.set_footer(text="You WON!")
             for child in self.children:
                 child.disabled = True
