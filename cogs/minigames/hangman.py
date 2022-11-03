@@ -20,7 +20,7 @@ class LetterButton(discord.ui.Button['Hangman']):
 
 class Hangman(discord.ui.View):
     def __init__(self, author: discord.Member):
-        self.word = random.choice(words)
+        self.word = str(random.choice(words))
         self.display_word = ["_"] * len(self.word)
         self.guessed_letters = []
         self.lives = 7
