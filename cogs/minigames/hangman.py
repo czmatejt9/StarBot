@@ -32,7 +32,12 @@ class Hangman(discord.ui.View):
 
     async def update(self, letter: str, interaction: discord.Interaction) -> None:
         self.guessed_letters.append(letter.lower())
-        self.display_word = "".join(f"{char} " if char in self.guessed_letters else "_ " for char in self.word)
+        self.display_word = ""
+        for char in self.word:
+            if char in self.guessed_letters:
+                self.display_word += char + " "
+            else:
+                self.display_word += "_ "
 
         if letter.lower() in self.word:
             self.embed.set_footer(text=f"You correctly guessed letter {letter}")
