@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from . import tictactoe, gobblet, hangman
-from bot import StarCityBot, MY_GUILD_ID
+from bot import StarCityBot, MY_GUILD_ID, HOME_PATH
 
 
 class Minigames(commands.Cog):
@@ -70,6 +70,7 @@ class Minigames(commands.Cog):
                               color=0x00FF00)
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         embed.set_footer(text="Click on the buttons to guess the word")
+        embed.set_thumbnail(url=f"{HOME_PATH}/assets/hangman7.png")
         msg = await ctx.send(embed=embed, view=hangman_game, ephemeral=True)
         hangman_game.message = msg
         hangman_game.embed = embed
