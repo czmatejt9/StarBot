@@ -52,7 +52,7 @@ class Hangman(discord.ui.View):
             self.embed.set_footer(text=f"Letter {letter} is not in the word")
 
         stop = False
-        if "_" not in self.display_word:
+        if "-" not in self.display_word:
             self.embed.set_footer(text="You WON!")
             for child in self.children:
                 child.disabled = True
