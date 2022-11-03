@@ -64,7 +64,6 @@ class Hangman(discord.ui.View):
             stop = True
 
         self.embed.description = f"Word: {self.display_word}" + f"\nLives left: {self.lives}"
-        self.embed.set_thumbnail(url=f"{HOME_PATH}/assets/hangman{self.lives}.png")
         await interaction.response.edit_message(embed=self.embed, view=self)
         if stop:
             self.stop()
