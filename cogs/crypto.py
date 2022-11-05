@@ -20,7 +20,7 @@ crypto_symbols = sorted([(asset.symbol.replace("/", ""), asset.name) for asset i
                         key=lambda x: x[0])
 my_list = [name.split("/")[0] + "(" + symbol[:-3] + ")" for symbol, name in crypto_symbols]
 available_cryptos = Literal[tuple(my_list)]
-CURRENCY_EMOTE = "💰"
+CURRENCY_EMOTE = "<:SMURFPENIZE:1038485999795318844>"
 PENDING_CONFIRMATIONS = []
 
 

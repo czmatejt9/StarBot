@@ -4,7 +4,7 @@ from datetime import datetime
 from bot import StarCityBot
 import discord.ui
 
-CURRENCY_EMOTE = "💰"
+CURRENCY_EMOTE = "<:SMURFPENIZE:1038485999795318844>"
 
 
 def generate_equation(lowest: int = 1, highest: int = 100):
