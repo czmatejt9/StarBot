@@ -281,10 +281,11 @@ class Currency(commands.Cog):
 
 # #############################################TASKS#########################################################
     @tasks.loop(time=(datetime.utcnow().replace(hour=23, minute=59, second=59, microsecond=0)
-                      + timedelta(seconds=1)).time(), count=1)
+                      + timedelta(seconds=2)).time(), count=1)
     async def daily_loop_starter(self):
         await self.bot.wait_until_ready()
         self.daily_loop.start()
+        self.daily_loop_starter.cancel()
 
     @tasks.loop(hours=24)
     async def daily_loop(self):
