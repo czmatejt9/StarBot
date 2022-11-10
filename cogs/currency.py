@@ -579,7 +579,7 @@ class Currency(commands.Cog):
                                               f"You both rolled the same number so you don't lose or gain anything.")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
-
+"""
     @commands.hybrid_command(name="gamble old")
     @app_commands.describe(guess="number 1 to 6", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -616,7 +616,7 @@ class Currency(commands.Cog):
                                               f"The dice rolled `{dice}`")
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
-
+"""
     @commands.hybrid_command(name="inventory", aliases=["inv"])
     @app_commands.describe(member="user to check inventory of")
     async def inventory(self, ctx: commands.Context, member: Union[discord.User, discord.Member] = None):
