@@ -580,7 +580,7 @@ class Currency(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(name="gamble old")
+    @commands.hybrid_command(name="gamble_old")
     @app_commands.describe(guess="number 1 to 6", amount="normal number or 'all'")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def gamble_old(self, ctx: commands.Context, guess: Literal[1, 2, 3, 4, 5, 6], amount: str):
