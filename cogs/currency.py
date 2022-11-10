@@ -580,6 +580,43 @@ class Currency(commands.Cog):
         embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
         await ctx.reply(embed=embed)
 
+    @commands.hybrid_command(name="gamble old")
+    @app_commands.describe(guess="number 1 to 6", amount="normal number or 'all'")
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def gamble_old(self, ctx: commands.Context, guess: Literal[1, 2, 3, 4, 5, 6], amount: str):
+        """Old gamble command where you guess number and the closest guess wins"""
+        wallet, bank = await self.get_balance(ctx.author.id)
+        if amount == "all":
+            amount = wallet
+        else:
+            try:
+                amount = int(amount)
+            except ValueError:
+                return await ctx.reply("Amount must be a number or 'all'!")
+        if amount <= 0:
+            return await ctx.reply("Amount must be positive!")
+        if amount > wallet:
+            return await ctx.reply("You don't have that much money!")
+
+        dice = GAMBLE_RANDOM.randint(1, 6)
+        starbot_guess = random.randint(1, 6)
+        if abs(dice - guess) < abs(dice - starbot_guess):
+            await self.transfer_money(self.bot.id, ctx.author.id, amount, 0, "gambling")
+            embed = discord.Embed(title=f"You won {amount}{CURRENCY_EMOTE}!", color=discord.Color.green(),
+                                  description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
+                                              f"The dice rolled `{dice}`")
+        elif dice != starbot_guess:
+            await self.transfer_money(ctx.author.id, self.bot.id, amount, 0, "gambling")
+            embed = discord.Embed(title=f"You lost {amount}{CURRENCY_EMOTE}!", color=discord.Color.red(),
+                                  description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
+                                              f"The dice rolled `{dice}`")
+        else:
+            embed = discord.Embed(title="It's a tie!", color=discord.Color.gold(),
+                                  description=f"You guessed {guess}. StarBot guessed {starbot_guess}.\n"
+                                              f"The dice rolled `{dice}`")
+        embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.display_avatar)
+        await ctx.reply(embed=embed)
+
     @commands.hybrid_command(name="inventory", aliases=["inv"])
     @app_commands.describe(member="user to check inventory of")
     async def inventory(self, ctx: commands.Context, member: Union[discord.User, discord.Member] = None):
