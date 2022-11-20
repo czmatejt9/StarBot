@@ -28,7 +28,7 @@ def get_latest_bar(alpaca: REST, symbol):
     """
     Get the latest bar of stock data from Alpaca API.
     """
-    bar = alpaca.get_latest_crypto_bar(symbol, "CBSE")
+    bar = alpaca.get_latest_crypto_bar(symbol, "BNCU")
     return bar.t, bar.c
 
 
