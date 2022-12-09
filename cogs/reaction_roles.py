@@ -17,11 +17,6 @@ class ReactionRoles(commands.Cog):
         guild: discord.Guild = self.bot.get_guild(MY_GUILD_ID)
         channel: discord.TextChannel = await guild.fetch_channel(1029452188621222008)
         message: discord.Message = await channel.fetch_message(message_id)
-        if message is None:
-            channel: discord.TextChannel = await guild.fetch_channel(
-                1050721692068102174)
-            message: discord.Message = await channel.fetch_message(message_id)
-
         await message.add_reaction(emoji)
         async with self.bot.db.cursor() as cursor:
           cursor: aiosqlite.Cursor
