@@ -16,12 +16,7 @@ class ReactionRoles(commands.Cog):
         """Adds a reaction role to a message. Must have admin permissions."""
         guild: discord.Guild = self.bot.get_guild(MY_GUILD_ID)
         channel: discord.TextChannel = await guild.fetch_channel(1029452188621222008)
-        try:
-            message: discord.Message = await channel.fetch_message(message_id)
-        except Exception as e:
-            channel: discord.TextChannel = await guild.fetch_channel(
-                1050721692068102174)
-            message: discord.Message = await channel.fetch_message(message_id)
+        message: discord.Message = await channel.fetch_message(message_id)
 
         await message.add_reaction(emoji)
         async with self.bot.db.cursor() as cursor:
