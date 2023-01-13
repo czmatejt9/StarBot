@@ -12,7 +12,7 @@ from .utils import my_math
 
 logger.name = __name__
 
-CURRENCY_EMOTE = "<:SMURFPENIZE:1038485999795318844>"
+CURRENCY_EMOTE = "<:SMURFPENIZE:1063440423625965578>"
 TAX = 0.03  # tax for sending money to another user (3%)
 DAILY_REWARD = 10000  # daily reward for using daily command
 DAILY_STREAK_BONUS = 2000  # bonus for daily reward if user has a streak
